@@ -134,7 +134,18 @@ while($row = mysqli_fetch_assoc($res_anios)) $anios[] = $row['anio'];
 <div class="app-container app-theme-white body-tabs-shadow fixed-sidebar fixed-header">
 
     <?php include("menu/header.php"); ?>
-    <?php include("menu/sidebar.php"); ?>
+    <div class="app-sidebar sidebar-shadow">
+        <?php
+            $rol = $_SESSION['rol'] ?? '';
+            if($rol == 'SISTEMA' || $rol == 'ADMINISTRADOR') {
+                include("menu/menu_adm.php");
+            } elseif($rol == 'GERENTES') {
+                include("menu/menu_GERENTES.php");
+            } else {
+                include("menu/menu_SISTEMA.php");
+            }
+        ?>
+    </div>
 
     <div class="app-main">
         <div class="app-main__outer">

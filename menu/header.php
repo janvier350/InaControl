@@ -53,7 +53,7 @@
                                 <div class="widget-content-left">
                                     <div class="btn-group">
                                         <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="p-0 btn">
-                                            <img width="42" class="rounded-circle" src=<?php echo($_SESSION['imagen'])?>>
+                                            <img width="42" class="rounded-circle" src=<?php echo($_SESSION['imagen'] ?? 'https://mdbootstrap.com/img/new/avatars/8.jpg')?>>
                                             <i class="fa fa-angle-down ml-2 opacity-8"></i>
                                         </a>
                                         <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
@@ -66,7 +66,7 @@
                                 </div>
                                 <div class="widget-content-left  ml-3 header-user-info">
                                     <div class="widget-heading">
-                                        <?php echo($_SESSION['user']) ?>
+                                        <?php echo($_SESSION['user'] ?? 'Usuario') ?>
                                     </div>
                                     <div class="widget-subheading">
                                         <?php echo($_SESSION['rol']) ?>
