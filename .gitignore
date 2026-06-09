@@ -1,0 +1,19 @@
+# Dependencias
+/vendor/
+
+# Configuración local con credenciales
+.env
+config/database.php
+config/db_config.php
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/logs/
+
+# Caché
+/cache/
+*.cache
