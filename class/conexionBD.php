@@ -4,13 +4,15 @@ function conectarse()
 
 {
 
-$db_host="localhost"; // Host BD al que conectarse, habitualmente es localhost
+$config = require __DIR__ . '/db_config.php';
 
-$db_nombre="overcloc_INASAR"; // Nombre de la Base de Datos que se desea utilizar
+$db_host=$config['host']; // Host BD al que conectarse, habitualmente es localhost
 
-$db_user="overcloc_INASAR"; // Nombre del usuario con permisos para acceder a la BD
+$db_nombre=$config['name']; // Nombre de la Base de Datos que se desea utilizar
 
-$db_pass="SjYF{dL9ddMR"; // Contrase
+$db_user=$config['user']; // Nombre del usuario con permisos para acceder a la BD
+
+$db_pass=$config['pass']; // Contraseña del usuario de la BD
 
 // Ahora estamos realizando una conexión y la llamamos $link
 

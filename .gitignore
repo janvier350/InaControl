@@ -5,6 +5,7 @@
 .env
 config/database.php
 config/db_config.php
+class/db_config.php
 
 # Archivos del sistema
 .DS_Store
@@ -13,6 +14,8 @@ Thumbs.db
 # Logs
 *.log
 /logs/
+error_log
+class/error_log
 
 # Caché
 /cache/
