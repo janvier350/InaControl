@@ -178,6 +178,13 @@
               
                 <li class="app-sidebar__heading">Reportes</li>
                 <li>
+                    <a href="Dashboard_Soportes.php">
+                        <i class="metismenu-icon pe-7s-graph3"></i>
+                        Dashboard Soportes
+                        <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
+                    </a>
+                </li>
+                <li>
                     <a href="RPT_Vendedor_Vta.php">
                         <i class="metismenu-icon pe-7s-monitor"></i>
                         Mis Citas
