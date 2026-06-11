@@ -262,7 +262,7 @@ $rol_usuario = $_SESSION["rol"];
                                         <div class="main-card mb-3 card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Informacion del equipo</h5>
-                                                <form class="needs-validation" novalidate method="post" action="class/Insert_Equipo.php">
+                                                <form class="needs-validation" novalidate method="post" action="class/Insert_Equipo.php" enctype="multipart/form-data">
                                                     <div class="form-row">
                                                         <div class="col-md-4 mb-3">
                                                             <label for="validationCustom05">Dispositivo</label>
@@ -369,15 +369,12 @@ $rol_usuario = $_SESSION["rol"];
                                                             </div>
                                                         </div>
                                                        <div class="col-md-4 mb-3">
-                                                           <!--<label for="validationCustom04">Observaciones</label>-->
-                                                           <!--<input type="text" class="form-control" id="validationCustom04" name="observiaciones" placeholder="nueva, de segunda, etc" value="nueva" required>-->
-                                                           <!--<div class="invalid-feedback">-->
-                                                           <!--    Please provide a valid state.-->
-                                                           <!--</div>-->
+                                                           <label for="imagenEquipo">Imagen del equipo</label>
+                                                           <input type="file" class="form-control" id="imagenEquipo" name="imagen" accept="image/*">
                                                        </div>
                                                     </div>
-                                                   
-                                                  
+
+
                                                     <button class="btn btn-primary" type="submit">Registrar Equipo</button>
                                                 </form>
                                         
@@ -430,7 +427,7 @@ $rol_usuario = $_SESSION["rol"];
     </thead>
     <tbody>
         <?php
-        $sql = "SELECT ID_EQUIPO, FECHA_COMPRA, DEPARTAMENTO, MARCA, MODELO, SERIAL, PROCESADOR, HDD, RAM, PANTALLA, OBSERVACIONES, ESTADO, DISPOSITIVO, ESTADO FROM INV_EQUIPO WHERE ESTADO_AI = 'A'";
+        $sql = "SELECT ID_EQUIPO, FECHA_COMPRA, DEPARTAMENTO, MARCA, MODELO, SERIAL, PROCESADOR, HDD, RAM, PANTALLA, OBSERVACIONES, ESTADO, DISPOSITIVO, IMAGEN FROM INV_EQUIPO WHERE ESTADO_AI = 'A'";
         $query = $conexion->query($sql);
 
         if (!$query) {
@@ -443,9 +440,10 @@ $rol_usuario = $_SESSION["rol"];
         <tr>
             <td>
                 <div class="d-flex align-items-center">
-                    <img src="https://mdbootstrap.com/img/new/avatars/8.jpg" 
-                         alt="" 
-                         style="width: 45px; height: 45px" 
+                    <?php $imgEquipo = !empty($valores['IMAGEN']) ? $valores['IMAGEN'] : 'https://mdbootstrap.com/img/new/avatars/8.jpg'; ?>
+                    <img src="<?php echo htmlspecialchars($imgEquipo); ?>"
+                         alt=""
+                         style="width: 45px; height: 45px; object-fit: cover;"
                          class="rounded-circle"/>
                     <div class="ms-3">
                         <p class="fw-bold mb-1">Procesador: <?php echo $valores['PROCESADOR']; ?></p>
