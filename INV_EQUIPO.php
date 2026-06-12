@@ -443,8 +443,11 @@ $rol_usuario = $_SESSION["rol"];
                     <?php $imgEquipo = !empty($valores['IMAGEN']) ? $valores['IMAGEN'] : 'https://mdbootstrap.com/img/new/avatars/8.jpg'; ?>
                     <img src="<?php echo htmlspecialchars($imgEquipo); ?>"
                          alt=""
-                         style="width: 45px; height: 45px; object-fit: cover;"
-                         class="rounded-circle"/>
+                         style="width: 45px; height: 45px; object-fit: cover; cursor: pointer;"
+                         class="rounded-circle"
+                         data-bs-toggle="modal"
+                         data-bs-target="#imagenEquipoModal"
+                         onclick="document.getElementById('imagenEquipoModalImg').src = this.src"/>
                     <div class="ms-3">
                         <p class="fw-bold mb-1">Procesador: <?php echo $valores['PROCESADOR']; ?></p>
                         <p class="fw-bold mb-1">RAM: <?php echo $valores['RAM']; ?></p>
@@ -677,6 +680,21 @@ $rol_usuario = $_SESSION["rol"];
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="imagenEquipoModal" tabindex="-1" aria-labelledby="imagenEquipoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagenEquipoModalLabel">Imagen del equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagenEquipoModalImg" src="" alt="Imagen del equipo" style="max-width: 100%; max-height: 70vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript" src="./assets/scripts/main.js"></script>
 
 </body>
