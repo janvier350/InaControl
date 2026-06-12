@@ -483,21 +483,15 @@ $rol_usuario = $_SESSION["rol"];
             </td>
             
             <td>
-            
-                                                            <button class="btn btn-outline-success fa fa-key"
-                                                                data-bs-toggle="modal" 
-                                                                data-bs-target="#editModalClave" 
-                                                                onclick="cargarIdClave(<?php echo htmlspecialchars(json_encode($valores), ENT_QUOTES, 'UTF-8'); ?>)">
-                                                            </button>
 
                                                             <button class="btn btn-outline-warning fa fa-edit"
-                                                                data-bs-toggle="modal" 
-                                                                data-bs-target="#editModal" 
-                                                                onclick="cargarDatos(<?php echo htmlspecialchars(json_encode($valores), ENT_QUOTES, 'UTF-8'); ?>)">
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editModalEquipo"
+                                                                onclick="cargarDatosEquipo(<?php echo htmlspecialchars(json_encode($valores), ENT_QUOTES, 'UTF-8'); ?>)">
                                                             </button>
                                                             <!-- Botón para eliminar con confirmación -->
-                                                            <button class="btn-shadow btn btn-outline-danger fa fa-minus-circle" 
-                                                                onclick="confirmarEliminacion(<?php echo $valores['ID_EQUIPO']; ?>)">
+                                                            <button class="btn-shadow btn btn-outline-danger fa fa-minus-circle"
+                                                                onclick="confirmarEliminacionEquipo(<?php echo $valores['ID_EQUIPO']; ?>)">
                                                             </button>
             </td>
         </tr>
@@ -537,142 +531,123 @@ $rol_usuario = $_SESSION["rol"];
         </div>
     </div>
     <script>
-                                            function confirmarEliminacion(idUsuario) {
-                                                if (confirm("¿Estás seguro de desactivar este usuario?")) {
-                                                    window.location.href = "class/Desactivar_UsuarioV2.php?idUsuario=" + idUsuario;
-                                                }
-                                            }
-                                        </script>
-   <script>
-    function cargarDatos(usuario) {
-        document.getElementById('idUsuario').value = usuario.IDADM_USUARIO;
-        document.getElementById('nombres').value = usuario.NOMBRES;
-        document.getElementById('apellidos').value = usuario.APELLIDOS;
-       
-        document.getElementById('telefono').value = usuario.TELEFONO;
-        document.getElementById('usuario').value = usuario.USUARIO;
-        document.getElementById('idAgencia').value = usuario.IDAGENCIA;
-         document.getElementById('idRol').value = usuario.IDADM_ROL;
-      
-
+    function confirmarEliminacionEquipo(idEquipo) {
+        if (confirm("¿Estás seguro de eliminar este equipo?")) {
+            window.location.href = "class/Eliminar_Equipo.php?idEquipo=" + idEquipo;
+        }
     }
 
-    function cargarIdClave(usuario) {
-        document.getElementById('idUsuarioRn').value = usuario.IDADM_USUARIO;
-        
+    function cargarDatosEquipo(equipo) {
+        document.getElementById('idEquipo').value = equipo.ID_EQUIPO;
+        document.getElementById('editDispositivo').value = equipo.DISPOSITIVO;
+        document.getElementById('editMarca').value = equipo.MARCA;
+        document.getElementById('editModelo').value = equipo.MODELO;
+        document.getElementById('editProcesador').value = equipo.PROCESADOR;
+        document.getElementById('editHdd').value = equipo.HDD;
+        document.getElementById('editSerial').value = equipo.SERIAL;
+        document.getElementById('editRam').value = equipo.RAM;
+        document.getElementById('editPantalla').value = equipo.PANTALLA;
+        document.getElementById('editObservaciones').value = equipo.OBSERVACIONES;
+        document.getElementById('editFechaCompra').value = equipo.FECHA_COMPRA;
+        document.getElementById('editDepartamento').value = equipo.DEPARTAMENTO;
+        document.getElementById('editEstado').value = equipo.ESTADO;
     }
-    
-    function guardarEdicion() {
-        var formData = new FormData(document.getElementById("formEditar"));
 
-        fetch("class/Editar_Usuario.php", {
+    function guardarEdicionEquipo() {
+        var formData = new FormData(document.getElementById("formEditarEquipo"));
+
+        fetch("class/Editar_Equipo.php", {
             method: "POST",
             body: formData
         })
         .then(response => response.text())
         .then(data => {
             alert(data);
-            location.reload(); // Recargar la página tras la edición
-        })
-        .catch(error => console.error("Error:", error));
-    }
-    function guardarEdicionClave() {
-        var formData = new FormData(document.getElementById("formEditarClave"));
-
-     // DEBUG
-    for (let [key, value] of formData.entries()) {
-        console.log(key + ": " + value);
-    }
-    
-    
-        fetch("class/Editar_Usuario_Clave.php", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.text())
-        .then(data => {
-            alert(data);
-            location.reload(); // Recargar la página tras la edición
+            location.reload();
         })
         .catch(error => console.error("Error:", error));
     }
 </script>
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+
+<div class="modal fade" id="editModalEquipo" tabindex="-1" aria-labelledby="editModalEquipoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editModalLabel">Editar usuario</h5>
+                <h5 class="modal-title" id="editModalEquipoLabel">Editar equipo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <form id="formEditar">
-                    <input type="hidden" id="idUsuario" name="idUsuario">
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Nombres</label>
-                        <input type="text" class="form-control" id="nombres" name="nombres">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Apellidos</label>
-                        <input type="text" class="form-control" id="apellidos" name="apellidos">
+                <form id="formEditarEquipo">
+                    <input type="hidden" id="idEquipo" name="idEquipo">
+
+                    <div class="form-row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Dispositivo</label>
+                            <select id="editDispositivo" name="dispositivo" class="form-control">
+                                <?php
+                                  $query = $conexion -> query ("SELECT * FROM INV_DISPOSITIVO WHERE ESTADO = 'A'");
+                                  while ($valores = mysqli_fetch_array($query)) {
+                                    echo '<option value="'.$valores['DISPOSITIVO'].'">'.$valores['DISPOSITIVO'].'</option>';
+                                  }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="editMarca" name="marca">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" class="form-control" id="editModelo" name="modelo">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Usuario</label>
-                        <input type="text" class="form-control" id="usuario" name="usuario">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-danger">Restablecer Clave</label>
-                        <input type="text" class="form-control" id="clave" name="clave">
+                    <div class="form-row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Procesador</label>
+                            <input type="text" class="form-control" id="editProcesador" name="procesador">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">HDD</label>
+                            <input type="text" class="form-control" id="editHdd" name="hdd">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Serial</label>
+                            <input type="text" class="form-control" id="editSerial" name="serial">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Teléfono</label>
-                        <input type="text" class="form-control" id="telefono" name="telefono">
+                    <div class="form-row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">RAM</label>
+                            <input type="text" class="form-control" id="editRam" name="ram">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Pantalla</label>
+                            <input type="text" class="form-control" id="editPantalla" name="pantalla">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <input type="text" class="form-control" id="editObservaciones" name="observaciones">
+                        </div>
                     </div>
 
-
-                    <div class="mb-3">
-                        <label class="form-label">Rol</label>
-                        <select id="validationCustom05" name="Idrol" class="form-control" required>
-                                                                <option value="">Seleccione rol:</option>
-                                                                <?php
-                                                                  $query = $conexion -> query ("SELECT * FROM ADM_ROL WHERE ESTADO = 'A'");
-                                                                  while ($valores = mysqli_fetch_array($query)) {
-                                                                    echo '<option value="'.$valores['IDADM_ROL'].'">'.$valores['CARGO'].'</option>';
-                                                                  }
-                                                                ?>
-                                                            </selec>
+                    <div class="form-row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fecha compra</label>
+                            <input type="date" class="form-control" id="editFechaCompra" name="fechaCompra">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Departamento</label>
+                            <input type="text" class="form-control" id="editDepartamento" name="departamento">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Estado</label>
+                            <input type="text" class="form-control" id="editEstado" name="estado">
+                        </div>
                     </div>
-                    
-                    <input type="hidden" name ="idAgencia"/>
-                    
-                    <button type="button" class="btn btn-primary" onclick="guardarEdicion()">Guardar Cambios</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="modal fade" id="editModalClave" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editModalLabel">Editar Clave</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formEditarClave">
-                     <input type="hidden" id="idUsuarioRn" name="idUsuarioRn">
-                    
-                    <div class="mb-3">
-                        <label class="form-label text-danger">Restablecer clave</label>
-                        <input type="password" class="form-control" id="claveRn" name="claveRn">
-                    </div>
-                    
-                   
-                    <button type="button" class="btn btn-primary" onclick="guardarEdicionClave()">Guardar Cambios</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarEdicionEquipo()">Guardar Cambios</button>
                 </form>
             </div>
         </div>

@@ -798,11 +798,8 @@ $result_horas = $conexion->query($sql_horas_dia);
                                     </thead>
                                     <tbody>
                                         
-                                        <?php 
-                                        
-                                      // Cambiamos el valor estático por el mes actual del sistema
-                                        $mes_seleccionado = date('n'); // 'n' devuelve el mes actual sin ceros iniciales (1 a 12)
-                                        $anio_seleccionado = date('Y'); // 'Y' devuelve el año actual (ej: 2026)
+                                        <?php
+
                                        $conexion->query("SET lc_time_names = 'es_ES'");
                                      $sql_horas_dia = "SELECT 
                                                         DAYNAME(FECHA_SOPORTE) AS dia_semana,
