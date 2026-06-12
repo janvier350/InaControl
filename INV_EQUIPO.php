@@ -551,6 +551,8 @@ $rol_usuario = $_SESSION["rol"];
         document.getElementById('editFechaCompra').value = equipo.FECHA_COMPRA;
         document.getElementById('editDepartamento').value = equipo.DEPARTAMENTO;
         document.getElementById('editEstado').value = equipo.ESTADO;
+        document.getElementById('editImagen').value = '';
+        document.getElementById('editImagenPreview').src = equipo.IMAGEN ? equipo.IMAGEN : 'https://mdbootstrap.com/img/new/avatars/8.jpg';
     }
 
     function guardarEdicionEquipo() {
@@ -577,8 +579,20 @@ $rol_usuario = $_SESSION["rol"];
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <form id="formEditarEquipo">
+                <form id="formEditarEquipo" enctype="multipart/form-data">
                     <input type="hidden" id="idEquipo" name="idEquipo">
+
+                    <div class="form-row">
+                        <div class="col-md-4 mb-3 text-center">
+                            <label class="form-label d-block">Imagen actual</label>
+                            <img id="editImagenPreview" src="" alt="Imagen del equipo"
+                                 style="width:100px; height:100px; object-fit:cover; border-radius:6px; border:1px solid #dee2e6;">
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Cambiar imagen del equipo</label>
+                            <input type="file" class="form-control" id="editImagen" name="imagen" accept="image/*">
+                        </div>
+                    </div>
 
                     <div class="form-row">
                         <div class="col-md-4 mb-3">
