@@ -33,6 +33,7 @@ $query = "SELECT
             A.HORA_FIN,
             A.ESTADO_SOPORTE,
             A.COMENTARIO,
+            A.EVIDENCIAS,
             CONCAT(D.NOMBRES, ' ', D.APELLIDOS) AS TECNICO
           FROM COTI_CALENDARIO A 
           INNER JOIN COTI_CLIENTE B ON A.ID_CLIENTE = B.ID_CLIENTE 
@@ -83,6 +84,7 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
             'cita' => $row['ESTADO_SOPORTE'],
             'tecnico' => $row['TECNICO'],
             'comentario' => $row['COMENTARIO'],
+            'evidencias' => !empty($row['EVIDENCIAS']) ? explode(',', $row['EVIDENCIAS']) : [],
             'consulta' => $row['TIPO_SOPORTE'] 
         )
     );
@@ -768,6 +770,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const est    = info.event.extendedProps.cita || 'Pendiente';
             const badge  = `<span class="badge ${estadoColors[est] || 'bg-secondary'}">${est}</span>`;
             const descHtml = nl2br(info.event.extendedProps.comentario);
+            const evidencias = info.event.extendedProps.evidencias || [];
+            const evidenciasHtml = evidencias.length ? `
+                <div class="mt-2">
+                    <strong><i class="bi bi-camera"></i> Evidencias:</strong>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+                        ${evidencias.map(src => `
+                            <img src="${src}" alt="Evidencia" loading="lazy"
+                                 style="width:80px; height:80px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid #dee2e6;"
+                                 onclick="verImagenEvidencia('${src}')">
+                        `).join('')}
+                    </div>
+                </div>` : '';
 
             var details = `
                 <p><strong><i class="bi bi-person-fill"></i> Cliente:</strong> ${info.event.title}</p>
@@ -784,6 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${descHtml}
                     </div>
                 </div>` : ''}
+                ${evidenciasHtml}
             `;
 
             document.getElementById('eventDetails').innerHTML = details;
@@ -809,6 +824,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     calendar.render();
 });
+
+function verImagenEvidencia(src) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:99999; cursor:zoom-out; align-items:center; justify-content:center;';
+    overlay.onclick = function() { overlay.remove(); };
+
+    var cerrar = document.createElement('span');
+    cerrar.innerHTML = '&times;';
+    cerrar.style.cssText = 'position:absolute; top:20px; right:30px; color:#fff; font-size:2.5rem; cursor:pointer; line-height:1;';
+    cerrar.onclick = function() { overlay.remove(); };
+
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:90%; max-height:90%; border-radius:6px;';
+
+    overlay.appendChild(cerrar);
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+}
 </script>
 
 
