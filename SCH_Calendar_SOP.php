@@ -556,7 +556,7 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <form id="insertCita" method="POST" action="class/Insert_Soporte.php">
+                <form id="insertCita" method="POST" action="class/Insert_Soporte.php" enctype="multipart/form-data">
                     <form method="post" accept-charset="UTF-8">
     <meta charset="UTF-8">
                     <div class="mb-3">
@@ -613,6 +613,12 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                         <div class="form-text text-end"><span id="contador">1000</span> caracteres disponibles</div>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">Evidencias del soporte (imágenes)</label>
+                        <input type="file" class="form-control" name="evidencias[]" id="evidencias" multiple accept="image/*">
+                        <div class="form-text">Estas imágenes se enviarán por correo al cliente junto con los datos del soporte.</div>
+                    </div>
+
                     <div class="text-end">
                         <button type="submit" class="btn btn-primary">Agendar</button>
                     </div>
@@ -644,15 +650,9 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                 <h5 class="modal-title" id="eventModalLabel">Gestión de Cita</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <form id="formEstado" method="POST" action="class/actualizar_estado_soporte.php" enctype="multipart/form-data" onsubmit="return validarFormulario();">
+            <form id="formEstado" method="POST" action="class/actualizar_estado_soporte.php" onsubmit="return validarFormulario();">
                 <div class="modal-body">
                     <div id="eventDetails" class="mb-4"></div>
-
-                    <div class="mb-3" id="evidenciaWrapper" style="display:none;">
-                        <label class="form-label">Evidencias del soporte (imágenes)</label>
-                        <input type="file" class="form-control" name="evidencias[]" id="evidencias" multiple accept="image/*">
-                        <div class="form-text">Estas imágenes se enviarán por correo al cliente como evidencia del trabajo realizado.</div>
-                    </div>
 
                     <input type="hidden" id="idCita" name="id">
                     <input type="hidden" id="estadoCita" name="estado">
@@ -727,7 +727,6 @@ function validarFormulario() {
 
 function setEstado(estado) {
     document.getElementById('estadoCita').value = estado;
-    document.getElementById('evidenciaWrapper').style.display = (estado === 'Confirmada') ? 'block' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -793,9 +792,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('btnConfirmar').dataset.eventId = info.event.id;
             document.getElementById('btnCancelar').dataset.eventId  = info.event.id;
-
-            document.getElementById('evidenciaWrapper').style.display = 'none';
-            document.getElementById('evidencias').value = '';
 
             new bootstrap.Modal(document.getElementById('eventModal')).show();
         },

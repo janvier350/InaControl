@@ -91,6 +91,40 @@ if (!$stmt_insert->execute()) {
 }
 $stmt_insert->close();
 
+// Procesar imágenes de evidencia (opcional)
+$idCalendario = $conexion->insert_id;
+$rutasEvidencias = [];
+if (!empty($_FILES['evidencias']) && is_array($_FILES['evidencias']['name'])) {
+    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $totalArchivos = count($_FILES['evidencias']['name']);
+
+    for ($i = 0; $i < $totalArchivos; $i++) {
+        if ($_FILES['evidencias']['error'][$i] !== UPLOAD_ERR_OK) {
+            continue;
+        }
+
+        $extension = strtolower(pathinfo($_FILES['evidencias']['name'][$i], PATHINFO_EXTENSION));
+        if (!in_array($extension, $extensionesPermitidas)) {
+            continue;
+        }
+
+        $nombreArchivo = 'soporte_' . $idCalendario . '_' . time() . '_' . $i . '.' . $extension;
+        $rutaDestino = __DIR__ . '/../images/evidencias/' . $nombreArchivo;
+
+        if (move_uploaded_file($_FILES['evidencias']['tmp_name'][$i], $rutaDestino)) {
+            $rutasEvidencias[] = 'images/evidencias/' . $nombreArchivo;
+        }
+    }
+
+    if (!empty($rutasEvidencias)) {
+        $evidenciasGuardar = implode(',', $rutasEvidencias);
+        $stmt_evi = $conexion->prepare("UPDATE COTI_CALENDARIO SET EVIDENCIAS = ? WHERE ID_CALENDARIO_SOPORTE = ?");
+        $stmt_evi->bind_param("si", $evidenciasGuardar, $idCalendario);
+        $stmt_evi->execute();
+        $stmt_evi->close();
+    }
+}
+
 // Obtener nombre + correo del cliente
 $stmt_cli = $conexion->prepare(
     "SELECT NOMBRES, APELLIDOS, EMAIL FROM AG_PACIENTE WHERE IDPACIENTE = ? LIMIT 1"
@@ -191,6 +225,19 @@ $htmlBody = "
           </td>
         </tr>" : "") . "
 
+        " . (!empty($rutasEvidencias) ? "
+        <!-- Evidencias adjuntas -->
+        <tr>
+          <td style='padding:4px 32px 16px;'>
+            <p style='font-size:13px;font-weight:bold;color:#1a3a5c;margin:0 0 6px;'>
+              📷 Evidencias adjuntas: " . count($rutasEvidencias) . "
+            </p>
+            <p style='font-size:13px;color:#777;margin:0;'>
+              Se incluyen como archivos adjuntos en este correo.
+            </p>
+          </td>
+        </tr>" : "") . "
+
         <!-- Información adicional -->
         <tr>
           <td style='padding:4px 32px 24px;'>
@@ -225,6 +272,7 @@ $textBody = "Estimado/a $nombreCliente,\n\n"
           . "Tipo: $tipoSoporteTexto\n"
           . "Técnico: $nombreTecnico\n"
           . ($comentarioRaw ? "\nActividades:\n$comentarioRaw\n" : "")
+          . (!empty($rutasEvidencias) ? "\nSe adjuntan " . count($rutasEvidencias) . " imagen(es) de evidencia.\n" : "")
           . "\nAtentamente,\nEquipo de Soporte Técnico — Overclocking";
 
 // ── Enviar correo ────────────────────────────────────────────────────
@@ -265,6 +313,10 @@ try {
     $mail->Subject = '=?UTF-8?B?' . base64_encode('Soporte Técnico Programado - Overclocking') . '?=';
     $mail->Body    = $htmlBody;
     $mail->AltBody = $textBody;
+
+    foreach ($rutasEvidencias as $rutaEvidencia) {
+        $mail->addAttachment(__DIR__ . '/../' . $rutaEvidencia);
+    }
 
     $mail->send();
 
