@@ -679,19 +679,25 @@ $rol_usuario = $_SESSION["rol"];
     </div>
 </div>
 
-<div id="imagenEquipoOverlay" onclick="cerrarImagenEquipo()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; cursor:zoom-out; align-items:center; justify-content:center;">
-    <span onclick="cerrarImagenEquipo()" style="position:absolute; top:20px; right:30px; color:#fff; font-size:2.5rem; cursor:pointer; line-height:1;">&times;</span>
-    <img id="imagenEquipoOverlayImg" src="" alt="Imagen del equipo" style="max-width:90%; max-height:90%; border-radius:6px;">
-</div>
-
 <script>
 function verImagenEquipo(src) {
-    document.getElementById('imagenEquipoOverlayImg').src = src;
-    var overlay = document.getElementById('imagenEquipoOverlay');
-    overlay.style.display = 'flex';
-}
-function cerrarImagenEquipo() {
-    document.getElementById('imagenEquipoOverlay').style.display = 'none';
+    var overlay = document.createElement('div');
+    overlay.id = 'imagenEquipoOverlay';
+    overlay.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:99999; cursor:zoom-out; align-items:center; justify-content:center;';
+    overlay.onclick = function() { overlay.remove(); };
+
+    var cerrar = document.createElement('span');
+    cerrar.innerHTML = '&times;';
+    cerrar.style.cssText = 'position:absolute; top:20px; right:30px; color:#fff; font-size:2.5rem; cursor:pointer; line-height:1;';
+    cerrar.onclick = function() { overlay.remove(); };
+
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:90%; max-height:90%; border-radius:6px;';
+
+    overlay.appendChild(cerrar);
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
 }
 </script>
 
