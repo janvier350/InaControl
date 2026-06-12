@@ -230,13 +230,14 @@ $textBody = "Estimado/a $nombreCliente,\n\n"
 // ── Enviar correo ────────────────────────────────────────────────────
 $mail = new PHPMailer(true);
 try {
+    $mailConfig = require __DIR__ . '/mail_config.php';
     $mail->isSMTP();
-    $mail->Host       = 'mail.overclocking.com.ec';
+    $mail->Host       = $mailConfig['host'];
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'soporte@overclocking.com.ec';
-    $mail->Password   = 'xco3B;NUFj=T';
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port       = 465;
+    $mail->Username   = $mailConfig['username'];
+    $mail->Password   = $mailConfig['pass'];
+    $mail->SMTPSecure = $mailConfig['secure'];
+    $mail->Port       = $mailConfig['port'];
     $mail->Timeout    = 10; // corta si no conecta en 10 seg
     $mail->CharSet    = 'UTF-8';
     $mail->Encoding   = 'base64';
