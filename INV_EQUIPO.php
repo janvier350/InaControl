@@ -445,9 +445,7 @@ $rol_usuario = $_SESSION["rol"];
                          alt=""
                          style="width: 45px; height: 45px; object-fit: cover; cursor: pointer;"
                          class="rounded-circle"
-                         data-bs-toggle="modal"
-                         data-bs-target="#imagenEquipoModal"
-                         onclick="document.getElementById('imagenEquipoModalImg').src = this.src"/>
+                         onclick="verImagenEquipo(this.src)"/>
                     <div class="ms-3">
                         <p class="fw-bold mb-1">Procesador: <?php echo $valores['PROCESADOR']; ?></p>
                         <p class="fw-bold mb-1">RAM: <?php echo $valores['RAM']; ?></p>
@@ -681,19 +679,21 @@ $rol_usuario = $_SESSION["rol"];
     </div>
 </div>
 
-<div class="modal fade" id="imagenEquipoModal" tabindex="-1" aria-labelledby="imagenEquipoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="imagenEquipoModalLabel">Imagen del equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body text-center">
-                <img id="imagenEquipoModalImg" src="" alt="Imagen del equipo" style="max-width: 100%; max-height: 70vh;">
-            </div>
-        </div>
-    </div>
+<div id="imagenEquipoOverlay" onclick="cerrarImagenEquipo()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; cursor:zoom-out; align-items:center; justify-content:center;">
+    <span onclick="cerrarImagenEquipo()" style="position:absolute; top:20px; right:30px; color:#fff; font-size:2.5rem; cursor:pointer; line-height:1;">&times;</span>
+    <img id="imagenEquipoOverlayImg" src="" alt="Imagen del equipo" style="max-width:90%; max-height:90%; border-radius:6px;">
 </div>
+
+<script>
+function verImagenEquipo(src) {
+    document.getElementById('imagenEquipoOverlayImg').src = src;
+    var overlay = document.getElementById('imagenEquipoOverlay');
+    overlay.style.display = 'flex';
+}
+function cerrarImagenEquipo() {
+    document.getElementById('imagenEquipoOverlay').style.display = 'none';
+}
+</script>
 
 <script type="text/javascript" src="./assets/scripts/main.js"></script>
 
