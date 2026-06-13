@@ -24,12 +24,14 @@ $rol_usuario = $_SESSION["rol"];
 
 $conexion->set_charset("utf8mb4");
 // Consulta para obtener las citas
-$query = "SELECT 
-            A.ID_CALENDARIO_SOPORTE, 
+$query = "SELECT
+            A.ID_CALENDARIO_SOPORTE,
             CONCAT(B.NOMBRES, ' ', B.APELLIDOS, ' ', B.RAZON_SOCIAL) AS CLIENTE,
             C.SOPORTE AS TIPO_SOPORTE,
-            A.FECHA_SOPORTE, 
-            A.HORA_INICIO, 
+            A.ID_SOPORTE,
+            A.ID_USUARIO,
+            A.FECHA_SOPORTE,
+            A.HORA_INICIO,
             A.HORA_FIN,
             A.ESTADO_SOPORTE,
             A.COMENTARIO,
@@ -83,9 +85,14 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
         'extendedProps' => array(
             'cita' => $row['ESTADO_SOPORTE'],
             'tecnico' => $row['TECNICO'],
+            'idTecnico' => $row['ID_USUARIO'],
             'comentario' => $row['COMENTARIO'],
             'evidencias' => !empty($row['EVIDENCIAS']) ? explode(',', $row['EVIDENCIAS']) : [],
-            'consulta' => $row['TIPO_SOPORTE'] 
+            'consulta' => $row['TIPO_SOPORTE'],
+            'idSoporte' => $row['ID_SOPORTE'],
+            'fecha' => $row['FECHA_SOPORTE'],
+            'horaInicio' => $row['HORA_INICIO'],
+            'horaFin' => $row['HORA_FIN']
         )
     );
 }
@@ -656,27 +663,82 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                 <div class="modal-body">
                     <div id="eventDetails" class="mb-4"></div>
 
+                    <!-- Formulario de edición de la cita (oculto por defecto) -->
+                    <div id="eventEditForm" class="mb-4" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="editFechaSoporte">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hora Inicio</label>
+                                <input type="time" class="form-control" id="editHoraInicio" step="1800">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hora Fin</label>
+                                <input type="time" class="form-control" id="editHoraFin" step="1800">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Técnico</label>
+                                <select class="form-select" id="editTecnico">
+                                    <?php
+                                      $query = $conexion->query("SELECT * FROM ADM_USUARIO WHERE ESTADO = 'A'");
+                                      while ($valores = mysqli_fetch_array($query)) {
+                                        echo '<option value="'.$valores['IDADM_USUARIO'].'">'.$valores['NOMBRES'].' '.$valores['APELLIDOS'].'</option>';
+                                      }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tipo de Soporte</label>
+                                <select class="form-select" id="editTipoSoporte">
+                                    <?php
+                                      $query = $conexion->query("SELECT * FROM COTI_TIPO_SOPORTE WHERE ESTADO = 'A'");
+                                      while ($valores = mysqli_fetch_array($query)) {
+                                        echo '<option value="'.$valores['ID_TIPO_SOPORTE'].'">'.$valores['SOPORTE'].'</option>';
+                                      }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" id="editComentario" rows="4" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+
                     <input type="hidden" id="idCita" name="id">
                     <input type="hidden" id="estadoCita" name="estado">
                 </div>
                 <div class="modal-footer">
-                    
-                    
-                   
+
+
+
                      <?php
                      $rol_usuario = $_SESSION["rol"];
                                     if($rol_usuario == "SISTEMA"){?>
-                                        
+
                                          <button id="btnConfirmar" class="btn btn-success" type="submit" onclick="setEstado('Confirmada')">Confirmar</button>
                     <button id="btnCancelar" class="btn btn-danger" type="submit" onclick="setEstado('Cancelada')">Cancelar</button>
-                                
-                                </button> 
-                                    <?php 
-                                        
+                    <button id="btnEditarCita" type="button" class="btn btn-outline-primary" onclick="toggleEditCita(true)">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </button>
+                    <button id="btnGuardarCita" type="button" class="btn btn-primary" style="display:none;" onclick="guardarEdicionCita()">
+                        <i class="bi bi-check-lg"></i> Guardar cambios
+                    </button>
+                    <button id="btnCancelarEdicion" type="button" class="btn btn-outline-secondary" style="display:none;" onclick="toggleEditCita(false)">
+                        Cancelar edición
+                    </button>
+
+                                </button>
+                                    <?php
+
                                     }else{ ?>
                                         <button id="btnConfirmar" class="btn btn-success" type="submit" onclick="setEstado('Confirmada')" disabled  hidden >Confirmar</button>
                     <button id="btnCancelar" class="btn btn-danger" type="submit" onclick="setEstado('Cancelada') " disabled hidden >Cancelar</button>
-                                 <?php          
+                                 <?php
                                     }
                                 ?>
                     <!--<button id="btnFacturar" class="btn btn-warning" type="submit" onclick="setEstado('Facturado')">Facturar</button>-->
@@ -729,6 +791,67 @@ function validarFormulario() {
 
 function setEstado(estado) {
     document.getElementById('estadoCita').value = estado;
+}
+
+function toggleEditCita(mostrar) {
+    const detalles   = document.getElementById('eventDetails');
+    const formEdicion = document.getElementById('eventEditForm');
+    const btnEditar  = document.getElementById('btnEditarCita');
+    const btnGuardar = document.getElementById('btnGuardarCita');
+    const btnCancelarEdicion = document.getElementById('btnCancelarEdicion');
+    const btnConfirmar = document.getElementById('btnConfirmar');
+    const btnCancelar  = document.getElementById('btnCancelar');
+
+    detalles.style.display    = mostrar ? 'none' : 'block';
+    formEdicion.style.display = mostrar ? 'block' : 'none';
+
+    if (btnEditar)  btnEditar.style.display  = mostrar ? 'none' : 'inline-block';
+    if (btnGuardar) btnGuardar.style.display = mostrar ? 'inline-block' : 'none';
+    if (btnCancelarEdicion) btnCancelarEdicion.style.display = mostrar ? 'inline-block' : 'none';
+    if (btnConfirmar) btnConfirmar.style.display = mostrar ? 'none' : 'inline-block';
+    if (btnCancelar)  btnCancelar.style.display  = mostrar ? 'none' : 'inline-block';
+}
+
+function guardarEdicionCita() {
+    const id = document.getElementById('idCita').value;
+    const fechaSoporte = document.getElementById('editFechaSoporte').value;
+    const horaInicio   = document.getElementById('editHoraInicio').value;
+    const horaFin      = document.getElementById('editHoraFin').value;
+    const idUsuario    = document.getElementById('editTecnico').value;
+    const idSoporte    = document.getElementById('editTipoSoporte').value;
+    const comentario   = document.getElementById('editComentario').value;
+
+    if (!fechaSoporte || !horaInicio || !horaFin || !idUsuario || !idSoporte) {
+        alert('Por favor complete todos los campos antes de guardar.');
+        return;
+    }
+
+    const btnGuardar = document.getElementById('btnGuardarCita');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = 'Guardando...';
+
+    fetch('class/Editar_Soporte.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id, fechaSoporte, horaInicio, horaFin, idUsuario, idSoporte, comentario })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Cita actualizada correctamente');
+            location.reload();
+        } else {
+            alert('Error al actualizar la cita: ' + (data.message || 'Desconocido'));
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="bi bi-check-lg"></i> Guardar cambios';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de comunicación con el servidor.');
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = '<i class="bi bi-check-lg"></i> Guardar cambios';
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -807,6 +930,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('btnConfirmar').dataset.eventId = info.event.id;
             document.getElementById('btnCancelar').dataset.eventId  = info.event.id;
+
+            // Precargar el formulario de edición con los datos actuales de la cita
+            const props = info.event.extendedProps;
+            document.getElementById('editFechaSoporte').value = props.fecha || '';
+            document.getElementById('editHoraInicio').value   = (props.horaInicio || '').substring(0, 5);
+            document.getElementById('editHoraFin').value      = (props.horaFin || '').substring(0, 5);
+            document.getElementById('editTecnico').value      = props.idTecnico || '';
+            document.getElementById('editTipoSoporte').value  = props.idSoporte || '';
+            document.getElementById('editComentario').value   = (props.comentario || '').replace(/\\r\\n|\\n/g, '\n');
+
+            // Asegurar que el modal inicie en modo "vista" (no edición)
+            toggleEditCita(false);
 
             new bootstrap.Modal(document.getElementById('eventModal')).show();
         },
