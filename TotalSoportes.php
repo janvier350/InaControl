@@ -172,7 +172,6 @@ $result_horas = $conexion->query($sql_horas_dia);
     
     <!--<canvas id="graficoSoportes" width="400" height="400"></canvas>-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
   <style>
         .filter-box {
             background: #f8f9fa;
@@ -732,7 +731,7 @@ $result_horas = $conexion->query($sql_horas_dia);
                                 <!-- MES -->
                                 <div class="form-group mr-3">
                                     <label for="mes" class="mr-2">Mes:</label>
-                                    <select name="mes" id="mes" class="form-control selectpicker">
+                                    <select name="mes" id="mes" class="form-control">
                                         <?php foreach ($meses as $numero => $nombre): ?>
                                             <option value="<?= $numero ?>" <?= $numero == $mes_seleccionado ? 'selected' : '' ?>>
                                                 <?= $nombre ?>
@@ -744,7 +743,7 @@ $result_horas = $conexion->query($sql_horas_dia);
                                 <!-- AÑO -->
                                 <div class="form-group mr-3">
                                     <label for="anio" class="mr-2">Año:</label>
-                                    <select name="anio" id="anio" class="form-control selectpicker">
+                                    <select name="anio" id="anio" class="form-control">
                                         <?php for ($i = $anio_actual; $i >= 2020; $i--): ?>
                                             <option value="<?= $i ?>" <?= $i == $anio_seleccionado ? 'selected' : '' ?>>
                                                 <?= $i ?>
@@ -756,7 +755,7 @@ $result_horas = $conexion->query($sql_horas_dia);
                                 <!-- TIPO DE SOPORTE -->
                                 <div class="form-group mr-3">
                                     <label for="tipo_soporte" class="mr-2">Tipo:</label>
-                                    <select name="tipo_soporte" id="tipo_soporte" class="form-control selectpicker">
+                                    <select name="tipo_soporte" id="tipo_soporte" class="form-control">
                                         <option value="">Todos</option>
                                         <option value="REMOTO" <?= $tipo_soporte === 'REMOTO' ? 'selected' : '' ?>>Remoto</option>
                                         <option value="PRESENCIAL" <?= $tipo_soporte === 'PRESENCIAL' ? 'selected' : '' ?>>Presencial</option>
@@ -891,24 +890,6 @@ $result_horas = $conexion->query($sql_horas_dia);
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('.selectpicker').selectpicker();
-        
-        // Mantener los parámetros en la URL al filtrar
-        $('form').on('submit', function() {
-            const params = new URLSearchParams(window.location.search);
-            $('input, select').each(function() {
-                if ($(this).attr('name') && $(this).val()) {
-                    params.set($(this).attr('name'), $(this).val());
-                }
-            });
-            window.location.search = params.toString();
-            return false;
-        });
-    });
-</script>
                             <div class="tab-pane tabs-animation fade" id="tab-content-1" role="tabpanel">
                                 <div class="row">
                                     <div class="col-md-6">
