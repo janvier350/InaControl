@@ -51,8 +51,8 @@ $sql_horas_dia = "
         DAYNAME(FECHA_SOPORTE) AS dia_semana,
         DAY(FECHA_SOPORTE) AS dia_mes,
         C.SOPORTE AS tipo_soporte,
-        SUM(TIMESTAMPDIFF(HOUR, HORA_INICIO, HORA_FIN)) AS horas
-    FROM 
+        SUM(TIMESTAMPDIFF(MINUTE, HORA_INICIO, HORA_FIN)) / 60 AS horas
+    FROM
         COTI_CALENDARIO A
     LEFT JOIN 
         COTI_TIPO_SOPORTE C ON A.ID_SOPORTE = C.ID_TIPO_SOPORTE
@@ -90,11 +90,14 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
             </tr>";
     
     while ($row = $result_horas->fetch_assoc()) {
+        $horas_decimal = $row['horas'];
+        $horas_enteras = floor($horas_decimal);
+        $minutos = round(($horas_decimal - $horas_enteras) * 60);
         echo "<tr>
                 <td>" . $row['dia_semana'] . "</td>
                 <td>" . $row['dia_mes'] . "</td>
                 <td>" . $row['tipo_soporte'] . "</td>
-                <td>" . $row['horas'] . "</td>
+                <td>" . $horas_enteras . " hrs " . $minutos . " min</td>
               </tr>";
     }
     echo "</table>";
