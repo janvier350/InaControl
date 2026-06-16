@@ -135,7 +135,13 @@
                     <a href="#">
                         <i class="metismenu-icon pe-7s-graph"></i>
                         Reportes estadisticos
-                    </a>            
+                    </a>
+                </li>
+                <li>
+                    <a href="Informe_Gerencial.php">
+                        <i class="metismenu-icon pe-7s-file"></i>
+                        Informe Ejecutivo
+                    </a>
                 </li>
 
                 <li class="app-sidebar__heading">Panel de Control</li>

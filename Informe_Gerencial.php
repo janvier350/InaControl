@@ -101,19 +101,6 @@ if (!empty($meses_data)) {
 $prom_sop  = count($meses_data) ? round($totales['total_soportes'] / count($meses_data), 1) : 0;
 $prom_hrs  = count($meses_data) ? round($totales['total_horas']    / count($meses_data), 1) : 0;
 
-// ── 7. Comentarios / descripciones para resumen cualitativo ────────────────
-$sql_com = "
-    SELECT A.COMENTARIO, A.FECHA_SOPORTE, C.SOPORTE AS tipo
-    FROM COTI_CALENDARIO A
-    LEFT JOIN COTI_TIPO_SOPORTE C ON A.ID_SOPORTE = C.ID_TIPO_SOPORTE
-    WHERE A.ESTADO_SOPORTE = 'Confirmada'
-      AND A.FECHA_SOPORTE BETWEEN ? AND ?
-      AND A.COMENTARIO IS NOT NULL AND A.COMENTARIO <> ''
-    ORDER BY A.FECHA_SOPORTE ASC";
-$st5 = $conexion->prepare($sql_com);
-$st5->bind_param("ss", $fecha_inicio, $fecha_fin);
-$st5->execute();
-$result_com = $st5->get_result();
 
 // Helpers
 function fmt_hrs($h) {
@@ -538,21 +525,6 @@ function pct($v, $total) {
         </div>
     </div>
 
-    <!-- ══ BITÁCORA DE COMENTARIOS ════════════════════════════════════════== -->
-    <?php if ($result_com->num_rows > 0): ?>
-    <div class="section-title" style="margin-top:36px;">&#128221; Bitácora de Comentarios Técnicos</div>
-    <div class="card">
-        <div class="card-header">Observaciones registradas durante el período</div>
-        <div class="card-body" style="max-height:420px;overflow-y:auto;">
-            <?php while ($c = $result_com->fetch_assoc()): ?>
-            <div class="comment-item">
-                <div class="c-meta"><?= date('d/m/Y', strtotime($c['FECHA_SOPORTE'])) ?> &mdash; <em><?= htmlspecialchars($c['tipo'] ?? '') ?></em></div>
-                <div class="c-text"><?= nl2br(htmlspecialchars($c['COMENTARIO'])) ?></div>
-            </div>
-            <?php endwhile; ?>
-        </div>
-    </div>
-    <?php endif; ?>
 
     <!-- ══ FIRMA Y FOOTER ═════════════════════════════════════════════════== -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px;" class="page-break">
