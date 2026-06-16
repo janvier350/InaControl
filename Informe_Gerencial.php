@@ -527,16 +527,18 @@ function pct($v, $total) {
 
 
     <!-- ══ FIRMA Y FOOTER ═════════════════════════════════════════════════== -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px;page-break-inside:avoid;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:60px;page-break-inside:avoid;">
         <div style="text-align:center;">
-            <div style="border-top:2px solid #0f3460;padding-top:12px;color:#0f3460;font-weight:600;font-size:13px;">
-                Jefe de Soporte Técnico
-            </div>
+            <div style="height:100px;border-bottom:2px solid #0f3460;margin-bottom:12px;"></div>
+            <div style="color:#0f3460;font-weight:600;font-size:13px;">Jefe de Soporte Técnico</div>
+            <div style="color:#555;font-size:11px;margin-top:4px;">Ing. Santiago Javier Varas Herrera</div>
+            <div style="color:#555;font-size:11px;">OVERCLOCKING &mdash; RUC: 0923006589001</div>
         </div>
         <div style="text-align:center;">
-            <div style="border-top:2px solid #0f3460;padding-top:12px;color:#0f3460;font-weight:600;font-size:13px;">
-                Gerencia General
-            </div>
+            <div style="height:100px;border-bottom:2px solid #0f3460;margin-bottom:12px;"></div>
+            <div style="color:#0f3460;font-weight:600;font-size:13px;">Gerencia General</div>
+            <div style="color:#555;font-size:11px;margin-top:4px;">María Belén Sarmiento Orellana</div>
+            <div style="color:#555;font-size:11px;">INASAR &mdash; RUC: 0992584246001</div>
         </div>
     </div>
 
