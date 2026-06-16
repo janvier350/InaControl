@@ -527,7 +527,7 @@ function pct($v, $total) {
 
 
     <!-- ══ FIRMA Y FOOTER ═════════════════════════════════════════════════== -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px;" class="page-break">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px;page-break-inside:avoid;">
         <div style="text-align:center;">
             <div style="border-top:2px solid #0f3460;padding-top:12px;color:#0f3460;font-weight:600;font-size:13px;">
                 Jefe de Soporte Técnico
