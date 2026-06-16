@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe de Logros – INASAR / OVERCLOCKING 2025–2026</title>
+<style>
+  @page { margin: 2.2cm 2.5cm; }
+  @media print {
+    .no-print { display: none !important; }
+    body { font-size: 10.5pt; }
+    .page-break { page-break-before: always; }
+    section { page-break-inside: avoid; }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 11pt;
+    color: #1a1a2e;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: #fff;
+    line-height: 1.7;
+  }
+
+  /* ── Portada ── */
+  .cover {
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 60%, #1a6491 100%);
+    color: #fff;
+    padding: 55px 45px 45px;
+    border-radius: 10px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute; right: -60px; top: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .cover .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 12px; border-radius: 20px; margin-bottom: 16px;
+    color: #ddd;
+  }
+  .cover h1 { font-size: 26pt; font-weight: 800; line-height: 1.15; margin-bottom: 6px; }
+  .cover h2 { font-size: 13pt; font-weight: 400; opacity: 0.75; margin-bottom: 28px; }
+  .cover .meta { display: flex; gap: 40px; flex-wrap: wrap; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 18px; }
+  .cover .meta-item label { display: block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.6; }
+  .cover .meta-item span { font-size: 13px; font-weight: 600; }
+
+  /* ── Intro ── */
+  .intro {
+    background: #f0f4f8;
+    border-left: 5px solid #0f3460;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 36px;
+    font-size: 10.5pt;
+    color: #333;
+  }
+
+  /* ── Sección ── */
+  section { margin-bottom: 32px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(90deg, #0f3460, #1a6491);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+  .section-header .num {
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; flex-shrink: 0;
+  }
+  .section-header h3 { font-size: 12pt; font-weight: 700; margin: 0; }
+
+  .logros-label {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #0f3460;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .logros-label::after { content: ''; flex: 1; height: 1px; background: #dde4ee; }
+
+  ul.logros { list-style: none; padding: 0; margin: 0 0 0 4px; }
+  ul.logros li {
+    padding: 5px 0 5px 22px;
+    position: relative;
+    font-size: 10.5pt;
+    color: #333;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  ul.logros li:last-child { border-bottom: none; }
+  ul.logros li::before {
+    content: '✓';
+    position: absolute; left: 0;
+    color: #27ae60; font-weight: 700; font-size: 11pt;
+  }
+  strong { color: #0f3460; }
+
+  /* ── Punto 7 destacado ── */
+  .acierto-box {
+    background: #fff8e1;
+    border-left: 5px solid #f9a825;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 10px;
+    font-size: 10.5pt;
+    color: #333;
+  }
+  .acierto-box strong { color: #b45309; }
+
+  /* ── Tabla resumen ── */
+  .resumen-title {
+    text-align: center;
+    font-size: 14pt; font-weight: 800;
+    color: #0f3460;
+    margin: 40px 0 6px;
+    letter-spacing: 0.5px;
+  }
+  .resumen-sub {
+    text-align: center; font-size: 10pt; color: #888; margin-bottom: 20px;
+  }
+  table.resumen {
+    width: 100%; border-collapse: collapse;
+    font-size: 10.5pt; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  table.resumen thead tr {
+    background: #0f3460; color: #fff;
+  }
+  table.resumen thead th {
+    padding: 12px 16px; text-align: left; font-weight: 700; font-size: 10pt;
+    letter-spacing: 0.5px;
+  }
+  table.resumen tbody tr:nth-child(even) { background: #f8faff; }
+  table.resumen tbody tr:nth-child(odd)  { background: #fff; }
+  table.resumen tbody td {
+    padding: 10px 16px; border-bottom: 1px solid #eee; color: #333;
+  }
+  table.resumen tbody tr:last-child td { border-bottom: none; }
+  .badge-ok   { background:#d1fae5; color:#065f46; padding:3px 10px; border-radius:12px; font-size:9pt; font-weight:600; }
+  .badge-wip  { background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:12px; font-size:9pt; font-weight:600; }
+  .badge-prog { background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:12px; font-size:9pt; font-weight:600; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; font-size: 9pt; color: #bbb;
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid #eee;
+  }
+
+  /* ── Print btn ── */
+  .btn-print {
+    display: block; width: fit-content; margin: 0 auto 30px;
+    padding: 10px 28px; background: #0f3460; color: #fff;
+    border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+  }
+  .btn-print:hover { background: #1a6491; }
+</style>
+</head>
+<body>
+
+<button class="btn-print no-print" onclick="window.print()">🖨️ Guardar como PDF</button>
+
+<!-- ══ PORTADA ══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="tag">Informe de Gestión &mdash; Uso Interno</div>
+  <h1>Informe de Logros y<br>Objetivos Alcanzados</h1>
+  <h2>Soporte Técnico y Asesoría Tecnológica</h2>
+  <div class="meta">
+    <div class="meta-item"><label>Cliente</label><span>INDUSTRIA ARROCERA SARMIENTO S.A. &mdash; INASAR</span></div>
+    <div class="meta-item"><label>Proveedor</label><span>OVERCLOCKING &mdash; Ing. Santiago Javier Varas Herrera</span></div>
+    <div class="meta-item"><label>Período</label><span>Mayo 2025 &mdash; Mayo 2026</span></div>
+    <div class="meta-item"><label>Fecha de emisión</label><span><?= date('d/m/Y') ?></span></div>
+  </div>
+</div>
+
+<!-- ══ INTRODUCCIÓN ══════════════════════════════════════════════════════════ -->
+<div class="intro">
+  El presente informe resume los principales logros, mejoras y aciertos obtenidos durante el período de vigencia del contrato de soporte técnico y asesoría tecnológica. Las actividades se clasifican en <strong>7 áreas estratégicas</strong> que reflejan el alcance y el impacto del trabajo realizado en beneficio de INASAR.
+</div>
+
+<!-- ══ 1. RED E INTERNET ════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">1</div>
+    <h3>Red e Internet &mdash; Migración y Expansión</h3>
+  </div>
+  <div class="logros-label">Logros alcanzados</div>
+  <ul class="logros">
+    <li>Se realizó la <strong>migración completa de la red</strong> desde el proveedor anterior (CNT) a <strong>fibra óptica de Netlife</strong>, logrando mayor velocidad y estabilidad en la conectividad de toda la planta.</li>
+    <li>Se amplió la cobertura Wi-Fi con la instalación de <strong>nuevos puntos de acceso</strong> en zonas críticas: área de producción, laboratorio, bodega y gerencia.</li>
+    <li>Se configuró y administró el <strong>switch administrable Aruba</strong>, segmentando la red por VLANs para mayor seguridad y control del tráfico.</li>
+    <li>Se resolvieron múltiples fallas de conectividad intermitente que afectaban la operación diaria, identificando y reemplazando cableado defectuoso.</li>
+  </ul>
+</section>
+
+<!-- ══ 2. VIDEOVIGILANCIA ══════════════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">2</div>
+    <h3>Videovigilancia &mdash; Cobertura Total de Planta</h3>
+  </div>
+  <div class="logros-label">Logros alcanzados</div>
+  <ul class="logros">
+    <li>Se amplió el sistema de videovigilancia logrando <strong>cobertura total de la planta</strong>, incluyendo taller, bodega, producción y accesos principales.</li>
+    <li>Se instalaron y configuraron <strong>2 cámaras adicionales en el taller</strong> mediante switch PoE de 4 puertos, habilitando monitoreo en tiempo real.</li>
+    <li>Se instaló el <strong>cable de datos y enlace necesario</strong> para conectar las cámaras de zona de báscula, resolviendo un punto ciego de seguridad.</li>
+    <li>Se verificó y optimizó el <strong>NVR/DVR</strong> asegurando grabación continua y acceso remoto para gerencia.</li>
+  </ul>
+</section>
+
+<!-- ══ 3. EQUIPOS E INFRAESTRUCTURA ═══════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">3</div>
+    <h3>Equipos e Infraestructura de Hardware</h3>
+  </div>
+  <div class="logros-label">Logros alcanzados</div>
+  <ul class="logros">
+    <li>Se realizó <strong>aumento de RAM</strong> en múltiples estaciones de trabajo (Laboratorio, M. Sarmiento, B. Sarmiento, Báscula, Gerencia), extendiendo la vida útil de los equipos existentes.</li>
+    <li>Se ejecutó la <strong>renovación de equipos</strong> para usuarios prioritarios: Jennifer Jadán (Ventas), Samantha (Laboratorio), Katherine, Silvia Mora (RRHH) y Gerencia, con respaldo de información y migración completa.</li>
+    <li>Se instaló y puso en funcionamiento el <strong>UPS de 6 KVA para el rack de servidores</strong>, protegiendo la infraestructura crítica de sistemas, cámaras e internet.</li>
+    <li>Se coordinó y ejecutó el <strong>mantenimiento preventivo de impresoras</strong> (Epson L5590, L4260, L3250, Zebra) con cambio de almohadillas, limpieza de inyectores y reparación de alimentadores de hojas.</li>
+    <li>Se reparó la <strong>laptop de Báscula 1</strong> (bisagras), ampliando su vida útil.</li>
+    <li>Se dio de baja correctamente <strong>equipos obsoletos</strong> (Toshiba ~2012) con respaldo de disco duro.</li>
+    <li>Se reemplazó y configuró el <strong>biométrico de asistencia</strong> con registro de huellas para todos los usuarios y habilitación de reportes vía web sin necesidad de USB.</li>
+  </ul>
+</section>
+
+<!-- ══ 4. SEGURIDAD INFORMÁTICA ════════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">4</div>
+    <h3>Seguridad Informática y Gestión de Accesos</h3>
+  </div>
+  <div class="logros-label">Logros alcanzados</div>
+  <ul class="logros">
+    <li>Se implementó <strong>BudoLock</strong> para bloqueo de puertos USB en equipos sensibles, ejecutado bajo supervisión de gerencia (Ing. Belén Sarmiento).</li>
+    <li>Se bloquearon en tiempo real <strong>2 dispositivos no autorizados</strong> detectados en la red, mediante el switch administrable Aruba de forma remota.</li>
+    <li>Se configuró la <strong>firma electrónica offline</strong> para Katherine.</li>
+    <li>Se gestionaron <strong>restablecimientos de contraseñas críticas</strong> y desvinculación de dispositivos ante salida de personal (raulsarmiento@inasar.ec, bodega@inasar.ec).</li>
+    <li>Se configuró la <strong>doble autenticación en correos corporativos</strong> y se resolvió un fallo prolongado del correo contabilidad@inasar.ec en coordinación con el proveedor de licencias Office 365.</li>
+    <li>Se realizó <strong>capacitación al personal de seguridad</strong> (agentes de turno) en manejo de equipos de monitoreo.</li>
+  </ul>
+</section>
+
+<!-- ══ 5. CORREOS CORPORATIVOS ═════════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">5</div>
+    <h3>Correos Electrónicos Corporativos</h3>
+  </div>
+  <div class="logros-label">Logros alcanzados</div>
+  <ul class="logros">
+    <li>Se crearon y configuraron nuevas <strong>cuentas corporativas</strong>: rrhh@inasar.ec (Silvia Mora), jefedeplanta@inasar.ec (Wilson Montesdeoca), calidad@inasar.ec (Julio Ortiz), contralor@inasar.ec (Ing. De Coello), info@inasar.ec (Janeth Crespo).</li>
+    <li>Se resolvió la <strong>configuración de Exchange</strong> para usuarios que no lograban sincronizar correo, normalizando el uso corporativo de Outlook y Teams.</li>
+    <li>Se instalaron correos en <strong>dispositivos móviles y tablets</strong> de gerencia y personal directivo.</li>
+  </ul>
+</section>
+
+<!-- ══ 6. DESARROLLO DE SOFTWARE ══════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">6</div>
+    <h3>Desarrollo de Software &mdash; InaControl</h3>
+  </div>
+  <div class="logros-label">Logros alcanzados</div>
+  <ul class="logros">
+    <li>Se inició y avanzó el desarrollo del <strong>sistema InaControl</strong> (inventario de equipos y gestión de tickets de soporte), desplegado en hosting Overclocking con dominio propio.</li>
+    <li>Se implementó <strong>validación de número de serie</strong> para evitar duplicados en el registro de equipos.</li>
+    <li>Se incorporaron módulos de: <strong>registro de soportes por calendario</strong>, exportación a Excel, filtros por período y técnico, y visualización de horas trabajadas mensuales y anuales.</li>
+    <li>Se desarrolló el <strong>informe ejecutivo gerencial</strong> con indicadores clave, distribución por tipo de soporte y desempeño por técnico, exportable a PDF con firma electrónica.</li>
+  </ul>
+</section>
+
+<!-- ══ 7. CONTINUIDAD DEL SERVICIO ════════════════════════════════════════ -->
+<section>
+  <div class="section-header">
+    <div class="num">7</div>
+    <h3>Gestión de Continuidad del Servicio</h3>
+  </div>
+  <div class="acierto-box">
+    <strong>Acierto destacado:</strong> A lo largo del año se gestionaron de forma proactiva múltiples cortes eléctricos no programados, fallos de UPS y bajones de voltaje, con respuesta remota en horarios fuera de jornada (incluyendo fines de semana y horario nocturno). En todos los casos se restableció el servicio y se notificó formalmente a gerencia y proveedores.
+  </div>
+</section>
+
+<!-- ══ TABLA RESUMEN EJECUTIVO ════════════════════════════════════════════ -->
+<div class="resumen-title">Resumen Ejecutivo</div>
+<div class="resumen-sub">Estado consolidado de áreas de gestión &mdash; Período mayo 2025 – mayo 2026</div>
+
+<table class="resumen">
+  <thead>
+    <tr>
+      <th>Área</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Red e Internet (migración + expansión)</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>Videovigilancia (cobertura total de planta)</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>Renovación y mantenimiento de equipos</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>Biométrico y control de asistencia</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>Seguridad informática (accesos y USB)</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>Correos corporativos</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>UPS / Protección eléctrica de servidores</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+    <tr><td>InaControl (sistema de gestión)</td><td><span class="badge-wip">🔄 En desarrollo continuo</span></td></tr>
+    <tr><td>Fibra óptica volteadora (rack definitivo)</td><td><span class="badge-prog">🔵 En estabilización</span></td></tr>
+    <tr><td>Continuidad del servicio (respuesta 24/7)</td><td><span class="badge-ok">✅ Completado</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ══ CIERRE ══════════════════════════════════════════════════════════════ -->
+<div style="margin-top:50px;display:grid;grid-template-columns:1fr 1fr;gap:60px;page-break-inside:avoid;">
+  <div style="text-align:center;">
+    <div style="height:90px;border-bottom:2px solid #0f3460;margin-bottom:10px;"></div>
+    <div style="color:#0f3460;font-weight:700;font-size:11pt;">Ing. Santiago Javier Varas Herrera</div>
+    <div style="color:#555;font-size:10pt;">Jefe de Soporte Técnico &mdash; OVERCLOCKING</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="height:90px;border-bottom:2px solid #0f3460;margin-bottom:10px;"></div>
+    <div style="color:#0f3460;font-weight:700;font-size:11pt;">María Belén Sarmiento Orellana</div>
+    <div style="color:#555;font-size:10pt;">Representante Legal &mdash; INASAR</div>
+  </div>
+</div>
+
+<div class="footer">
+  Informe de Logros &mdash; INASAR / OVERCLOCKING &mdash; Período Mayo 2025 – Mayo 2026 &mdash; Confidencial, uso interno
+</div>
+
+</body>
+</html>
