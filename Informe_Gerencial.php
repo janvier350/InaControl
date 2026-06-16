@@ -56,11 +56,11 @@ $result_tipo = $st2->get_result();
 
 // ── 3. Soportes por técnico ─────────────────────────────────────────────────
 $sql_tec = "
-    SELECT U.NOMBRE AS tecnico,
+    SELECT CONCAT(U.NOMBRES, ' ', U.APELLIDOS) AS tecnico,
            COUNT(*) AS cantidad,
            ROUND(SUM(TIMESTAMPDIFF(MINUTE, A.HORA_INICIO, A.HORA_FIN)) / 60, 2) AS horas
     FROM COTI_CALENDARIO A
-    LEFT JOIN COTI_USUARIOS U ON A.ID_USUARIO = U.ID_USUARIO
+    LEFT JOIN ADM_USUARIO U ON A.ID_USUARIO = U.IDADM_USUARIO
     WHERE A.ESTADO_SOPORTE = 'Confirmada'
       AND A.FECHA_SOPORTE BETWEEN ? AND ?
     GROUP BY A.ID_USUARIO
