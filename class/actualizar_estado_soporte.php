@@ -1,65 +1,37 @@
 <?php
+ob_start();
+session_start();
 require_once("funciones.php");
 require_once("conexionBD.php");
 $conexion = conectarse();
-session_start();
 
-
-
-$id = isset($_POST['id']) ? $_POST['id'] : null;
-$estado = isset($_POST['estado']) ? $_POST['estado'] : null;
+$id     = isset($_POST['id'])     ? (int)$_POST['id']                              : null;
+$estado = isset($_POST['estado']) ? $conexion->real_escape_string($_POST['estado']) : null;
 
 if ($id === null || $estado === null) {
-    echo json_encode([
-        "success" => false,
-        "message" => "Datos incompletos",
-        "id_recibido" => $id,
-        "estado_recibido" => $estado
-    ]);
+    header("Location: ../SCH_Calendar_SOP.php?error=datos_incompletos");
     exit();
 }
 
-// Verifica si el ID existe en la base de datos
-$verificar = $conexion->prepare("SELECT * FROM COTI_CALENDARIO WHERE ID_CALENDARIO_SOPORTE  = ?");
+$verificar = $conexion->prepare("SELECT ID_CALENDARIO_SOPORTE FROM COTI_CALENDARIO WHERE ID_CALENDARIO_SOPORTE = ?");
 $verificar->bind_param("i", $id);
 $verificar->execute();
-$resultado = $verificar->get_result();
+$res = $verificar->get_result();
 
-if ($resultado->num_rows === 0) {
-    echo json_encode([
-        "success" => false,
-        "message" => "No se encontró la cita con ID proporcionado",
-        "id_recibido" => $id
-    ]);
+if ($res->num_rows === 0) {
+    header("Location: ../SCH_Calendar_SOP.php?error=cita_no_encontrada");
     exit();
 }
 
-// Intentar actualizar el estado de la cita
-$stmt = $conexion->prepare("UPDATE COTI_CALENDARIO SET ESTADO_SOPORTE = ? WHERE ID_CALENDARIO_SOPORTE  = ?");
+$stmt = $conexion->prepare("UPDATE COTI_CALENDARIO SET ESTADO_SOPORTE = ? WHERE ID_CALENDARIO_SOPORTE = ?");
 $stmt->bind_param("si", $estado, $id);
 
 if ($stmt->execute()) {
-    // echo json_encode([
-        // "success" => true,
-        // "message" => "Estado actualizado correctamente",
-        // "id_recibido" => $id,
-        // "estado_recibido" => $estado
-    // ]);
-    // echo 'Event data inserted successfully.. Event ID: '.$conexion->insert_id;
-
-         //   echo "<script>javascript: alert('Datos Creados Correctamente!') </script>";
-            echo "<Script language='JavaScript'>";
-            echo 'self.location = "../SCH_Calendar_SOP.php"';
-            echo"</script>";
+    header("Location: ../SCH_Calendar_SOP.php?success=1");
 } else {
-    echo json_encode([
-        "success" => false,
-        "message" => "Error en la consulta SQL",
-        "error" => $stmt->error // Mostrar el error de la consulta
-    ]);
+    header("Location: ../SCH_Calendar_SOP.php?error=" . urlencode($stmt->error));
 }
 
 $stmt->close();
 $conexion->close();
-?>
-
+exit();
