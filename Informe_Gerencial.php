@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 ob_start();
 session_start();
 require_once("class/funciones.php");
@@ -10,8 +13,7 @@ if (!isset($_SESSION["rol"])) {
     header("Location: break.php");
     exit();
 }
-$now = time();
-if ($now > $_SESSION['expire']) {
+if (!isset($_SESSION['expire']) || time() > $_SESSION['expire']) {
     session_destroy();
     header("Location: expirada.php");
     exit();
