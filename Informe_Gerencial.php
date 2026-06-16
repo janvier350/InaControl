@@ -8,11 +8,13 @@ $conexion->set_charset("utf8");
 
 if (!isset($_SESSION["rol"])) {
     header("Location: break.php");
+    exit();
 }
 $now = time();
 if ($now > $_SESSION['expire']) {
     session_destroy();
     header("Location: expirada.php");
+    exit();
 }
 
 // ── Parámetros del período ──────────────────────────────────────────────────
@@ -85,8 +87,13 @@ $meses_data = [];
 while ($r = $result_mes->fetch_assoc()) $meses_data[] = $r;
 
 // ── 5. Mes más activo ───────────────────────────────────────────────────────
-$mes_pico = !empty($meses_data) ? array_reduce($meses_data, fn($carry, $item) =>
-    ($item['cantidad'] > ($carry['cantidad'] ?? 0)) ? $item : $carry, $meses_data[0]) : null;
+$mes_pico = null;
+if (!empty($meses_data)) {
+    $mes_pico = $meses_data[0];
+    foreach ($meses_data as $_m) {
+        if ($_m['cantidad'] > $mes_pico['cantidad']) $mes_pico = $_m;
+    }
+}
 
 // ── 6. Promedio mensual ─────────────────────────────────────────────────────
 $prom_sop  = count($meses_data) ? round($totales['total_soportes'] / count($meses_data), 1) : 0;
@@ -451,7 +458,9 @@ function pct($v, $total) {
         <div class="card-header">Actividad mensual &mdash; Soportes realizados por mes</div>
         <div class="card-body">
             <?php
-            $max_sop = max(array_column($meses_data, 'cantidad') ?: [1]);
+            $cantidades = array_column($meses_data, 'cantidad');
+            $max_sop = !empty($cantidades) ? max($cantidades) : 1;
+            if ($max_sop == 0) $max_sop = 1;
             foreach ($meses_data as $r):
                 $pct_bar = round($r['cantidad'] / $max_sop * 100);
             ?>
