@@ -423,12 +423,26 @@ $rol_usuario = $_SESSION["rol"];
             <th>OBSERVACIONES</th>
             <th>COMPRA</th>
             <th>ESTADO</th>
+            <th>ASIGNADO A</th>
+            <th>FECHA ASIGNACIÓN</th>
         </tr>
     </thead>
     <tbody>
         <?php
         $sql = "SELECT ID_EQUIPO, FECHA_COMPRA, DEPARTAMENTO, MARCA, MODELO, SERIAL, PROCESADOR, HDD, RAM, PANTALLA, OBSERVACIONES, ESTADO, DISPOSITIVO, IMAGEN FROM INV_EQUIPO WHERE ESTADO_AI = 'A'";
         $query = $conexion->query($sql);
+
+        $sqlAsig = "SELECT A.ID_EQUIPO, A.FECHA_ASIGNACION, U.NOMBRES, U.APELLIDOS
+                    FROM INV_ASIGNACION A
+                    INNER JOIN ADM_USUARIO U ON A.ID_ADM_USUARIO = U.IDADM_USUARIO
+                    WHERE A.ESTADO = 'A'";
+        $queryAsig = $conexion->query($sqlAsig);
+        $asignaciones = array();
+        if ($queryAsig) {
+            while ($asig = mysqli_fetch_array($queryAsig)) {
+                $asignaciones[$asig['ID_EQUIPO']] = $asig;
+            }
+        }
 
         if (!$query) {
             die("Error en la consulta: " . $conexion->error);
@@ -481,7 +495,13 @@ $rol_usuario = $_SESSION["rol"];
             <td>
             <p class="fw-normal mb-1"><?php echo $valores['ESTADO']; ?></p>
             </td>
-            
+            <td>
+            <p class="fw-normal mb-1"><?php echo isset($asignaciones[$valores['ID_EQUIPO']]) ? htmlspecialchars($asignaciones[$valores['ID_EQUIPO']]['NOMBRES'].' '.$asignaciones[$valores['ID_EQUIPO']]['APELLIDOS']) : '-'; ?></p>
+            </td>
+            <td>
+            <p class="fw-normal mb-1"><?php echo isset($asignaciones[$valores['ID_EQUIPO']]) ? htmlspecialchars($asignaciones[$valores['ID_EQUIPO']]['FECHA_ASIGNACION']) : '-'; ?></p>
+            </td>
+
             <td>
 
                                                             <button class="btn btn-outline-warning fa fa-edit"
@@ -780,7 +800,7 @@ function verImagenEquipo(src) {
 
     var img = document.createElement('img');
     img.src = src;
-    img.style.cssText = 'max-width:90%; max-height:90%; border-radius:6px;';
+    img.style.cssText = 'width:80vw; max-width:900px; height:80vh; object-fit:contain; border-radius:6px; background:#fff;';
 
     overlay.appendChild(cerrar);
     overlay.appendChild(img);
