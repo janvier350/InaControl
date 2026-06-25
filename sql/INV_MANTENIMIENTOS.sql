@@ -1,0 +1,16 @@
+-- Ejecutar este script en phpMyAdmin (pestaña SQL) sobre la base de datos de INASAR.
+-- Crea la tabla para registrar el historial de mantenimientos de los equipos del inventario.
+
+CREATE TABLE `INV_MANTENIMIENTOS` (
+  `ID_MANTENIMIENTO` int(11) NOT NULL AUTO_INCREMENT,
+  `ID_EQUIPO` int(11) NOT NULL,
+  `FECHA_SALIDA` date NOT NULL,
+  `DANIO_REPORTADO` varchar(500) NOT NULL,
+  `FECHA_ENTREGA` date DEFAULT NULL,
+  `SOLUCION_APLICADA` varchar(500) DEFAULT NULL,
+  `ESTADO` varchar(25) NOT NULL DEFAULT 'En Reparacion',
+  `FECHA_REGISTRO` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ID_MANTENIMIENTO`),
+  KEY `FK_INV_MANTENIMIENTOS_EQUIPO` (`ID_EQUIPO`),
+  CONSTRAINT `FK_INV_MANTENIMIENTOS_EQUIPO` FOREIGN KEY (`ID_EQUIPO`) REFERENCES `INV_EQUIPO` (`ID_EQUIPO`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;

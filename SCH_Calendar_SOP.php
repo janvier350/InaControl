@@ -496,9 +496,12 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                                         
                                          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#editModal">
                                 Abrir Ticket
-                                </button> 
-                                    <?php 
-                                        
+                                </button>
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalMantenimiento">
+                                <i class="bi bi-tools"></i> Registrar Mantenimiento
+                                </button>
+                                    <?php
+
                                     }else{
                                        
                                         
@@ -648,7 +651,85 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
     }
 </script>
 
-
+<!-- Modal de Mantenimiento de Equipos -->
+<div class="modal fade" id="modalMantenimiento" tabindex="-1" aria-labelledby="modalMantenimientoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalMantenimientoLabel"><i class="bi bi-tools"></i> Mantenimiento de Equipos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="tab-salida-link" data-bs-toggle="tab" href="#tab-salida" role="tab">Equipo sale a reparación</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="tab-entrega-link" data-bs-toggle="tab" href="#tab-entrega" role="tab">Equipo regresa de reparación</a>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3">
+                    <!-- Registrar salida -->
+                    <div class="tab-pane fade show active" id="tab-salida" role="tabpanel">
+                        <form method="POST" action="class/Insert_Mantenimiento.php">
+                            <div class="mb-3">
+                                <label class="form-label">Equipo</label>
+                                <select class="form-select" name="idEquipo" required>
+                                    <option value="">Seleccione equipo:</option>
+                                    <?php
+                                      $query = $conexion->query("SELECT ID_EQUIPO, MARCA, MODELO, SERIAL, DEPARTAMENTO FROM INV_EQUIPO WHERE ESTADO_AI = 'A'");
+                                      while ($valores = mysqli_fetch_array($query)) {
+                                        echo '<option value="'.$valores['ID_EQUIPO'].'">'.$valores['MARCA'].' '.$valores['MODELO'].' - '.$valores['SERIAL'].' ('.$valores['DEPARTAMENTO'].')</option>';
+                                      }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Fecha de salida</label>
+                                <input type="date" class="form-control" name="fechaSalida" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Daño / problema que presenta</label>
+                                <textarea class="form-control" name="danioReportado" rows="3" maxlength="500" required></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-warning">Registrar Salida</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Registrar entrega -->
+                    <div class="tab-pane fade" id="tab-entrega" role="tabpanel">
+                        <form method="POST" action="class/Cerrar_Mantenimiento.php">
+                            <div class="mb-3">
+                                <label class="form-label">Mantenimiento en curso</label>
+                                <select class="form-select" name="idMantenimiento" required>
+                                    <option value="">Seleccione equipo en reparación:</option>
+                                    <?php
+                                      $queryM = $conexion->query("SELECT M.ID_MANTENIMIENTO, M.FECHA_SALIDA, E.MARCA, E.MODELO, E.SERIAL FROM INV_MANTENIMIENTOS M INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO WHERE M.ESTADO = 'En Reparacion'");
+                                      while ($valoresM = mysqli_fetch_array($queryM)) {
+                                        echo '<option value="'.$valoresM['ID_MANTENIMIENTO'].'">'.$valoresM['MARCA'].' '.$valoresM['MODELO'].' - '.$valoresM['SERIAL'].' (salió: '.$valoresM['FECHA_SALIDA'].')</option>';
+                                      }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Fecha de entrega</label>
+                                <input type="date" class="form-control" name="fechaEntrega" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Detalle de la solución aplicada</label>
+                                <textarea class="form-control" name="solucionAplicada" rows="3" maxlength="500" required></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-success">Registrar Entrega</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal para citas -->
 
