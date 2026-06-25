@@ -493,6 +493,12 @@ $rol_usuario = $_SESSION["rol"];
                                                             <button class="btn-shadow btn btn-outline-danger fa fa-minus-circle"
                                                                 onclick="confirmarEliminacionEquipo(<?php echo $valores['ID_EQUIPO']; ?>)">
                                                             </button>
+                                                            <!-- Botón para asignar equipo a un usuario -->
+                                                            <button class="btn-shadow btn btn-outline-primary fa fa-user-plus"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#asignarModalEquipo"
+                                                                onclick="prepararAsignacion(<?php echo $valores['ID_EQUIPO']; ?>, '<?php echo htmlspecialchars($valores['MARCA'].' '.$valores['MODELO'].' - '.$valores['SERIAL'], ENT_QUOTES, 'UTF-8'); ?>')">
+                                                            </button>
             </td>
         </tr>
         <?php 
@@ -668,7 +674,52 @@ $rol_usuario = $_SESSION["rol"];
     </div>
 </div>
 
+<!-- Modal para asignar equipo a un usuario -->
+<div class="modal fade" id="asignarModalEquipo" tabindex="-1" aria-labelledby="asignarModalEquipoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="asignarModalEquipoLabel">Asignar equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="class/Insert_Asignacion.php">
+                    <input type="hidden" id="asignarIdEquipo" name="idEquipo">
+                    <div class="mb-3">
+                        <label class="form-label">Equipo</label>
+                        <input type="text" class="form-control" id="asignarEquipoLabel" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Usuario</label>
+                        <select class="form-select" name="idUsuario" required>
+                            <option value="">Seleccione usuario:</option>
+                            <?php
+                              $queryUsr = $conexion->query("SELECT IDADM_USUARIO, NOMBRES, APELLIDOS FROM ADM_USUARIO WHERE ESTADO = 'A'");
+                              while ($valoresUsr = mysqli_fetch_array($queryUsr)) {
+                                echo '<option value="'.$valoresUsr['IDADM_USUARIO'].'">'.$valoresUsr['NOMBRES'].' '.$valoresUsr['APELLIDOS'].'</option>';
+                              }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de asignación</label>
+                        <input type="date" class="form-control" name="fechaAsignacion" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Asignar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+function prepararAsignacion(idEquipo, equipoLabel) {
+    document.getElementById('asignarIdEquipo').value = idEquipo;
+    document.getElementById('asignarEquipoLabel').value = equipoLabel;
+}
+
 function verImagenEquipo(src) {
     var overlay = document.createElement('div');
     overlay.id = 'imagenEquipoOverlay';
