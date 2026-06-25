@@ -250,7 +250,7 @@ $rol_usuario = $_SESSION["rol"];
                             </li>
                             <li class="nav-item">
                                 <a role="tab" class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2">
-                                    <!-- <span>Background Events</span> -->
+                                    <span>Historial Mantenimientos</span>
                                 </a>
                             </li>
                         </ul>
@@ -520,6 +520,53 @@ $rol_usuario = $_SESSION["rol"];
                             <div class="tab-pane tabs-animation fade" id="tab-content-2" role="tabpanel">
                                 <div class="main-card mb-3 card">
                                     <div class="card-body">
+                                        <table class="table align-middle mb-0 bg-white">
+                                            <thead class="bg-light">
+                                                <tr>
+                                                    <th>EQUIPO</th>
+                                                    <th>SERIE</th>
+                                                    <th>FECHA SALIDA</th>
+                                                    <th>DAÑO REPORTADO</th>
+                                                    <th>FECHA ENTREGA</th>
+                                                    <th>SOLUCIÓN APLICADA</th>
+                                                    <th>ESTADO</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                $sqlMant = "SELECT M.FECHA_SALIDA, M.DANIO_REPORTADO, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.ESTADO,
+                                                                   E.MARCA, E.MODELO, E.SERIAL
+                                                            FROM INV_MANTENIMIENTOS M
+                                                            INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO
+                                                            ORDER BY M.FECHA_SALIDA DESC";
+                                                $queryMant = $conexion->query($sqlMant);
+
+                                                if ($queryMant && $queryMant->num_rows > 0) {
+                                                    while ($mant = mysqli_fetch_array($queryMant)) {
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($mant['MARCA'].' '.$mant['MODELO']); ?></td>
+                                                    <td><?php echo htmlspecialchars($mant['SERIAL']); ?></td>
+                                                    <td><?php echo htmlspecialchars($mant['FECHA_SALIDA']); ?></td>
+                                                    <td><?php echo htmlspecialchars($mant['DANIO_REPORTADO']); ?></td>
+                                                    <td><?php echo htmlspecialchars($mant['FECHA_ENTREGA'] ?? '-'); ?></td>
+                                                    <td><?php echo htmlspecialchars($mant['SOLUCION_APLICADA'] ?? '-'); ?></td>
+                                                    <td>
+                                                        <?php if ($mant['ESTADO'] === 'En Reparacion') { ?>
+                                                            <span class="badge bg-warning text-dark">En Reparación</span>
+                                                        <?php } else { ?>
+                                                            <span class="badge bg-success">Completado</span>
+                                                        <?php } ?>
+                                                    </td>
+                                                </tr>
+                                                <?php
+                                                    }
+                                                } else {
+                                                    echo "<tr><td colspan='7' class='text-center'>No hay mantenimientos registrados</td></tr>";
+                                                }
+                                                ?>
+                                            </tbody>
+                                        </table>
                                         <!-- <div id="calendar-bg-events"></div> -->
                                     </div>
                                 </div>
