@@ -188,10 +188,10 @@ $rol_usuario = $_SESSION["rol"];
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $sqlC = "SELECT C.ID_CORREO, C.CORREO, C.CONTRASENA, C.ALMACENAMIENTO, C.ESTADO, C.FECHA_REGISTRO, C.ID_ADM_USUARIO,
+                                        $sqlC = "SELECT C.ID_CORREO, C.CORREO, C.CONTRASENA, C.ALMACENAMIENTO, C.ESTADO, C.FECHA_REGISTRO, C.IDADM_USUARIO,
                                                         U.NOMBRES, U.APELLIDOS
                                                  FROM COR_CORREO C
-                                                 LEFT JOIN ADM_USUARIO U ON C.ID_ADM_USUARIO = U.IDADM_USUARIO
+                                                 LEFT JOIN ADM_USUARIO U ON C.IDADM_USUARIO = U.IDADM_USUARIO
                                                  ORDER BY C.ESTADO DESC, C.CORREO ASC";
                                         $qC = $conexion->query($sqlC);
 
@@ -309,7 +309,7 @@ function cargarCorreo(c) {
     document.getElementById('editCorreo').value      = c.CORREO;
     document.getElementById('editContrasena').value  = c.CONTRASENA;
     document.getElementById('editAlmacenamiento').value = c.ALMACENAMIENTO || '';
-    document.getElementById('editIdUsuario').value   = c.ID_ADM_USUARIO || '';
+    document.getElementById('editIdUsuario').value   = c.IDADM_USUARIO || '';
     document.getElementById('editEstadoCorreo').value = c.ESTADO;
 }
 
