@@ -410,15 +410,50 @@ $rol_usuario = $_SESSION["rol"];
                                         <div class="main-card mb-3 card">
                                     <div class="card-body">
                                         <!-- <div id='calendar1'></div> -->
-                                        <table class="table align-middle mb-0 bg-white">
+                                        <!-- Filtros de búsqueda rápida -->
+                                        <div class="row mb-3 g-2">
+                                            <div class="col-md-4">
+                                                <select id="filtroUsuario" class="form-select form-select-sm" onchange="filtrarTabla()">
+                                                    <option value="">-- Todos los usuarios --</option>
+                                                    <?php
+                                                      $qFU = $conexion->query("SELECT DISTINCT U.NOMBRES, U.APELLIDOS FROM INV_ASIGNACION A INNER JOIN ADM_USUARIO U ON A.ID_ADM_USUARIO = U.IDADM_USUARIO WHERE A.ESTADO='A' ORDER BY U.NOMBRES");
+                                                      while ($fu = mysqli_fetch_array($qFU)) {
+                                                        $nombre = htmlspecialchars($fu['NOMBRES'].' '.$fu['APELLIDOS']);
+                                                        echo '<option value="'.$nombre.'">'.$nombre.'</option>';
+                                                      }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <select id="filtroDispositivo" class="form-select form-select-sm" onchange="filtrarTabla()">
+                                                    <option value="">-- Todos los dispositivos --</option>
+                                                    <?php
+                                                      $qFD = $conexion->query("SELECT DISTINCT DISPOSITIVO FROM INV_EQUIPO WHERE ESTADO_AI='A' ORDER BY DISPOSITIVO");
+                                                      while ($fd = mysqli_fetch_array($qFD)) {
+                                                        echo '<option value="'.htmlspecialchars($fd['DISPOSITIVO']).'">'.htmlspecialchars($fd['DISPOSITIVO']).'</option>';
+                                                      }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <select id="filtroDepartamento" class="form-select form-select-sm" onchange="filtrarTabla()">
+                                                    <option value="">-- Todos los departamentos --</option>
+                                                    <?php
+                                                      $qFDep = $conexion->query("SELECT DISTINCT DEPARTAMENTO FROM INV_EQUIPO WHERE ESTADO_AI='A' ORDER BY DEPARTAMENTO");
+                                                      while ($fdep = mysqli_fetch_array($qFDep)) {
+                                                        echo '<option value="'.htmlspecialchars($fdep['DEPARTAMENTO']).'">'.htmlspecialchars($fdep['DEPARTAMENTO']).'</option>';
+                                                      }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <table class="table align-middle mb-0 bg-white" id="tablaEquipos">
     <thead class="bg-light">
         <tr>
             <th>EQUIPO</th>
             <th>ALMACENAMIENTO</th>
-            <th>MARCA</th>
-            <th>DISPOSITIVO</th>
-            <th>MODELO</th>
-            <th>SERIE</th>
+            <th>IDENTIFICACIÓN</th>
             <th>DEPARTAMENTO</th>
             <th>OBSERVACIONES</th>
             <th>COMPRA</th>
@@ -450,8 +485,12 @@ $rol_usuario = $_SESSION["rol"];
 
         if ($query->num_rows > 0) {
             while ($valores = mysqli_fetch_array($query)) {
-        ?>    
-        <tr>
+                $asigNombre = isset($asignaciones[$valores['ID_EQUIPO']]) ? htmlspecialchars($asignaciones[$valores['ID_EQUIPO']]['NOMBRES'].' '.$asignaciones[$valores['ID_EQUIPO']]['APELLIDOS']) : '-';
+                $asigFecha  = isset($asignaciones[$valores['ID_EQUIPO']]) ? htmlspecialchars($asignaciones[$valores['ID_EQUIPO']]['FECHA_ASIGNACION']) : '-';
+        ?>
+        <tr data-usuario="<?php echo $asigNombre; ?>"
+            data-dispositivo="<?php echo htmlspecialchars($valores['DISPOSITIVO']); ?>"
+            data-departamento="<?php echo htmlspecialchars($valores['DEPARTAMENTO']); ?>">
             <td>
                 <div class="d-flex align-items-center">
                     <?php $imgEquipo = !empty($valores['IMAGEN']) ? $valores['IMAGEN'] : 'https://mdbootstrap.com/img/new/avatars/8.jpg'; ?>
@@ -463,44 +502,22 @@ $rol_usuario = $_SESSION["rol"];
                     <div class="ms-3">
                         <p class="fw-bold mb-1">Procesador: <?php echo $valores['PROCESADOR']; ?></p>
                         <p class="fw-bold mb-1">RAM: <?php echo $valores['RAM']; ?></p>
-                        
                         <p class="text-muted mb-0">Pantalla: <?php echo $valores['PANTALLA']; ?></p>
                     </div>
                 </div>
             </td>
+            <td><p class="fw-normal mb-1"><?php echo $valores['HDD']; ?></p></td>
             <td>
-            <p class="fw-normal mb-1"><?php echo $valores['HDD']; ?></p>
+                <p class="fw-bold mb-1"><?php echo htmlspecialchars($valores['MARCA']); ?> <?php echo htmlspecialchars($valores['MODELO']); ?></p>
+                <span class="badge bg-secondary"><?php echo htmlspecialchars($valores['DISPOSITIVO']); ?></span>
+                <p class="text-muted mb-0" style="font-size:.82em;">S/N: <?php echo htmlspecialchars($valores['SERIAL']); ?></p>
             </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo $valores['MARCA']; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo $valores['DISPOSITIVO']; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo $valores['MODELO']; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo $valores['SERIAL']; ?></p>
-            </td>
-             <td>
-            <p class="fw-normal mb-1"><?php echo $valores['DEPARTAMENTO']; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo $valores['OBSERVACIONES']; ?></p>
-            </td>
-             <td>
-            <p class="fw-normal mb-1"><?php echo $valores['FECHA_COMPRA']; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo $valores['ESTADO']; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo isset($asignaciones[$valores['ID_EQUIPO']]) ? htmlspecialchars($asignaciones[$valores['ID_EQUIPO']]['NOMBRES'].' '.$asignaciones[$valores['ID_EQUIPO']]['APELLIDOS']) : '-'; ?></p>
-            </td>
-            <td>
-            <p class="fw-normal mb-1"><?php echo isset($asignaciones[$valores['ID_EQUIPO']]) ? htmlspecialchars($asignaciones[$valores['ID_EQUIPO']]['FECHA_ASIGNACION']) : '-'; ?></p>
-            </td>
+            <td><p class="fw-normal mb-1"><?php echo htmlspecialchars($valores['DEPARTAMENTO']); ?></p></td>
+            <td><p class="fw-normal mb-1"><?php echo htmlspecialchars($valores['OBSERVACIONES']); ?></p></td>
+            <td><p class="fw-normal mb-1"><?php echo $valores['FECHA_COMPRA']; ?></p></td>
+            <td><p class="fw-normal mb-1"><?php echo $valores['ESTADO']; ?></p></td>
+            <td><p class="fw-normal mb-1"><?php echo $asigNombre; ?></p></td>
+            <td><p class="fw-normal mb-1"><?php echo $asigFecha; ?></p></td>
 
             <td>
 
@@ -782,6 +799,22 @@ $rol_usuario = $_SESSION["rol"];
 </div>
 
 <script>
+function filtrarTabla() {
+    var usuario     = document.getElementById('filtroUsuario').value.toLowerCase();
+    var dispositivo = document.getElementById('filtroDispositivo').value.toLowerCase();
+    var depto       = document.getElementById('filtroDepartamento').value.toLowerCase();
+    var filas = document.querySelectorAll('#tablaEquipos tbody tr');
+    filas.forEach(function(fila) {
+        var fUsuario = (fila.dataset.usuario || '').toLowerCase();
+        var fDisp    = (fila.dataset.dispositivo || '').toLowerCase();
+        var fDepto   = (fila.dataset.departamento || '').toLowerCase();
+        var visible  = (!usuario || fUsuario.indexOf(usuario) >= 0)
+                    && (!dispositivo || fDisp === dispositivo)
+                    && (!depto || fDepto === depto);
+        fila.style.display = visible ? '' : 'none';
+    });
+}
+
 function prepararAsignacion(idEquipo, equipoLabel) {
     document.getElementById('asignarIdEquipo').value = idEquipo;
     document.getElementById('asignarEquipoLabel').value = equipoLabel;
