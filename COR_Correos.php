@@ -147,11 +147,15 @@ $rol_usuario = $_SESSION["rol"];
                                         </div>
                                     </div>
                                     <div class="form-row">
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
+                                            <label>Departamento</label>
+                                            <input type="text" class="form-control" name="departamento" placeholder="Ej: Contabilidad, RRHH, Gerencia">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
                                             <label>Almacenamiento</label>
                                             <input type="text" class="form-control" name="almacenamiento" placeholder="Ej: 5 GB, 10 GB, ilimitado">
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label>Asignar a usuario <small class="text-muted">(opcional)</small></label>
                                             <select class="form-select" name="idUsuario">
                                                 <option value="">Sin asignar</option>
@@ -174,11 +178,38 @@ $rol_usuario = $_SESSION["rol"];
                     <div class="tab-pane tabs-animation fade" id="tab-content-1" role="tabpanel">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
+                                <!-- Filtros + botón exportar -->
+                                <div class="row mb-3 g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label mb-1" style="font-size:.82em;">Filtrar por usuario</label>
+                                        <select id="filtroUsuarioCorreo" class="form-select form-select-sm" onchange="filtrarCorreos()">
+                                            <option value="">-- Todos los usuarios --</option>
+                                            <?php
+                                              $qFU = $conexion->query("SELECT DISTINCT U.IDADM_USUARIO, U.NOMBRES, U.APELLIDOS FROM COR_CORREO C INNER JOIN ADM_USUARIO U ON C.IDADM_USUARIO = U.IDADM_USUARIO ORDER BY U.NOMBRES");
+                                              while ($fu = mysqli_fetch_array($qFU)) {
+                                                $nombre = htmlspecialchars($fu['NOMBRES'].' '.$fu['APELLIDOS']);
+                                                echo '<option value="'.$nombre.'">'.$nombre.'</option>';
+                                              }
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label mb-1" style="font-size:.82em;">Buscar correo</label>
+                                        <input type="text" id="buscarCorreo" class="form-control form-control-sm" placeholder="Escriba para buscar..." oninput="filtrarCorreos()">
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <a href="class/Export_Correos.php" class="btn btn-success btn-sm">
+                                            <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+                                        </a>
+                                    </div>
+                                </div>
+
                                 <table class="table align-middle mb-0 bg-white" id="tablaCorreos">
                                     <thead class="bg-light">
                                         <tr>
                                             <th>CORREO</th>
                                             <th>CONTRASEÑA</th>
+                                            <th>DEPARTAMENTO</th>
                                             <th>ALMACENAMIENTO</th>
                                             <th>ASIGNADO A</th>
                                             <th>ESTADO</th>
@@ -188,7 +219,7 @@ $rol_usuario = $_SESSION["rol"];
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $sqlC = "SELECT C.ID_CORREO, C.CORREO, C.CONTRASENA, C.ALMACENAMIENTO, C.ESTADO, C.FECHA_REGISTRO, C.IDADM_USUARIO,
+                                        $sqlC = "SELECT C.ID_CORREO, C.CORREO, C.CONTRASENA, C.ALMACENAMIENTO, C.DEPARTAMENTO, C.ESTADO, C.FECHA_REGISTRO, C.IDADM_USUARIO,
                                                         U.NOMBRES, U.APELLIDOS
                                                  FROM COR_CORREO C
                                                  LEFT JOIN ADM_USUARIO U ON C.IDADM_USUARIO = U.IDADM_USUARIO
@@ -197,15 +228,18 @@ $rol_usuario = $_SESSION["rol"];
 
                                         if ($qC && $qC->num_rows > 0) {
                                             while ($c = mysqli_fetch_array($qC)) {
+                                                $nombreUsuario = $c['NOMBRES'] ? htmlspecialchars($c['NOMBRES'].' '.$c['APELLIDOS']) : '';
                                         ?>
-                                        <tr>
+                                        <tr data-usuario="<?php echo $nombreUsuario; ?>"
+                                            data-correo="<?php echo htmlspecialchars($c['CORREO']); ?>">
                                             <td><strong><?php echo htmlspecialchars($c['CORREO']); ?></strong></td>
                                             <td class="pass-cell">
                                                 <span class="pass-hidden" data-pass="<?php echo htmlspecialchars($c['CONTRASENA']); ?>">••••••••</span>
                                                 <button class="btn btn-sm btn-link p-0 ms-1" onclick="togglePassCell(this)" title="Ver contraseña"><i class="bi bi-eye"></i></button>
                                             </td>
+                                            <td><?php echo htmlspecialchars($c['DEPARTAMENTO'] ?: '-'); ?></td>
                                             <td><?php echo htmlspecialchars($c['ALMACENAMIENTO'] ?: '-'); ?></td>
-                                            <td><?php echo $c['NOMBRES'] ? htmlspecialchars($c['NOMBRES'].' '.$c['APELLIDOS']) : '<span class="text-muted">Sin asignar</span>'; ?></td>
+                                            <td><?php echo $nombreUsuario ? $nombreUsuario : '<span class="text-muted">Sin asignar</span>'; ?></td>
                                             <td>
                                                 <?php if ($c['ESTADO'] === 'A') { ?>
                                                     <span class="badge-activo">Activo</span>
@@ -227,7 +261,7 @@ $rol_usuario = $_SESSION["rol"];
                                         <?php
                                             }
                                         } else {
-                                            echo "<tr><td colspan='7' class='text-center text-muted'>No hay correos registrados.</td></tr>";
+                                            echo "<tr><td colspan='8' class='text-center text-muted'>No hay correos registrados.</td></tr>";
                                         }
                                         ?>
                                     </tbody>
@@ -270,11 +304,15 @@ $rol_usuario = $_SESSION["rol"];
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Departamento</label>
+                            <input type="text" class="form-control" id="editDepartamento" name="departamento" placeholder="Ej: Contabilidad">
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Almacenamiento</label>
                             <input type="text" class="form-control" id="editAlmacenamiento" name="almacenamiento">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Asignar a usuario</label>
                             <select class="form-select" id="editIdUsuario" name="idUsuario">
                                 <option value="">Sin asignar</option>
@@ -286,7 +324,7 @@ $rol_usuario = $_SESSION["rol"];
                                 ?>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Estado</label>
                             <select class="form-select" id="editEstadoCorreo" name="estado">
                                 <option value="A">Activo</option>
@@ -304,13 +342,26 @@ $rol_usuario = $_SESSION["rol"];
 </div>
 
 <script>
+function filtrarCorreos() {
+    var usuario = document.getElementById('filtroUsuarioCorreo').value.toLowerCase();
+    var buscar  = document.getElementById('buscarCorreo').value.toLowerCase();
+    document.querySelectorAll('#tablaCorreos tbody tr').forEach(function(fila) {
+        var fUsuario = (fila.dataset.usuario || '').toLowerCase();
+        var fCorreo  = (fila.dataset.correo  || '').toLowerCase();
+        var ok = (!usuario || fUsuario === usuario)
+              && (!buscar  || fCorreo.indexOf(buscar) >= 0);
+        fila.style.display = ok ? '' : 'none';
+    });
+}
+
 function cargarCorreo(c) {
-    document.getElementById('editIdCorreo').value    = c.ID_CORREO;
-    document.getElementById('editCorreo').value      = c.CORREO;
-    document.getElementById('editContrasena').value  = c.CONTRASENA;
+    document.getElementById('editIdCorreo').value       = c.ID_CORREO;
+    document.getElementById('editCorreo').value         = c.CORREO;
+    document.getElementById('editContrasena').value     = c.CONTRASENA;
+    document.getElementById('editDepartamento').value   = c.DEPARTAMENTO || '';
     document.getElementById('editAlmacenamiento').value = c.ALMACENAMIENTO || '';
-    document.getElementById('editIdUsuario').value   = c.IDADM_USUARIO || '';
-    document.getElementById('editEstadoCorreo').value = c.ESTADO;
+    document.getElementById('editIdUsuario').value      = c.IDADM_USUARIO || '';
+    document.getElementById('editEstadoCorreo').value   = c.ESTADO;
 }
 
 function confirmarEliminarCorreo(id) {
