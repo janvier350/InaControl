@@ -18,10 +18,10 @@ if (!$idCorreo || !$correo || !$contrasena) {
 }
 
 if ($idUsuario) {
-    $stmt = mysqli_prepare($conexion, "UPDATE COR_CORREO SET CORREO=?, CONTRASENA=?, ALMACENAMIENTO=?, ID_ADM_USUARIO=?, ESTADO=? WHERE ID_CORREO=?");
+    $stmt = mysqli_prepare($conexion, "UPDATE COR_CORREO SET CORREO=?, CONTRASENA=?, ALMACENAMIENTO=?, IDADM_USUARIO=?, ESTADO=? WHERE ID_CORREO=?");
     mysqli_stmt_bind_param($stmt, "sssisi", $correo, $contrasena, $almacenamiento, $idUsuario, $estado, $idCorreo);
 } else {
-    $stmt = mysqli_prepare($conexion, "UPDATE COR_CORREO SET CORREO=?, CONTRASENA=?, ALMACENAMIENTO=?, ID_ADM_USUARIO=NULL, ESTADO=? WHERE ID_CORREO=?");
+    $stmt = mysqli_prepare($conexion, "UPDATE COR_CORREO SET CORREO=?, CONTRASENA=?, ALMACENAMIENTO=?, IDADM_USUARIO=NULL, ESTADO=? WHERE ID_CORREO=?");
     mysqli_stmt_bind_param($stmt, "ssssi", $correo, $contrasena, $almacenamiento, $estado, $idCorreo);
 }
 

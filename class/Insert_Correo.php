@@ -16,7 +16,7 @@ if (!$correo || !$contrasena) {
 }
 
 if ($idUsuario) {
-    $stmt = mysqli_prepare($conexion, "INSERT INTO COR_CORREO (CORREO, CONTRASENA, ALMACENAMIENTO, ID_ADM_USUARIO, ESTADO) VALUES (?, ?, ?, ?, 'A')");
+    $stmt = mysqli_prepare($conexion, "INSERT INTO COR_CORREO (CORREO, CONTRASENA, ALMACENAMIENTO, IDADM_USUARIO, ESTADO) VALUES (?, ?, ?, ?, 'A')");
     mysqli_stmt_bind_param($stmt, "sssi", $correo, $contrasena, $almacenamiento, $idUsuario);
 } else {
     $stmt = mysqli_prepare($conexion, "INSERT INTO COR_CORREO (CORREO, CONTRASENA, ALMACENAMIENTO, ESTADO) VALUES (?, ?, ?, 'A')");

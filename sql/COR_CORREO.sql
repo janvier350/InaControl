@@ -1,15 +1,17 @@
--- Ejecutar en phpMyAdmin (pestaña SQL) sobre la base de datos de INASAR.
--- Crea la tabla de correos corporativos.
+-- Ejecutar en phpMyAdmin (pestaña SQL) sobre la base de datos overcloc_INASAR.
+-- Si hubo un intento previo fallido, este DROP limpia el estado antes de crear la tabla.
+
+DROP TABLE IF EXISTS `COR_CORREO`;
 
 CREATE TABLE `COR_CORREO` (
   `ID_CORREO` int(11) NOT NULL AUTO_INCREMENT,
   `CORREO` varchar(150) NOT NULL,
   `CONTRASENA` varchar(100) NOT NULL,
   `ALMACENAMIENTO` varchar(50) DEFAULT NULL,
-  `ID_ADM_USUARIO` int(11) DEFAULT NULL,
+  `IDADM_USUARIO` int(11) DEFAULT NULL,
   `ESTADO` varchar(2) NOT NULL DEFAULT 'A',
   `FECHA_REGISTRO` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID_CORREO`),
-  KEY `FK_COR_CORREO_USUARIO` (`ID_ADM_USUARIO`),
-  CONSTRAINT `FK_COR_CORREO_USUARIO` FOREIGN KEY (`ID_ADM_USUARIO`) REFERENCES `ADM_USUARIO` (`IDADM_USUARIO`)
+  KEY `IDX_COR_CORREO_USUARIO` (`IDADM_USUARIO`),
+  CONSTRAINT `FK_COR_CORREO_USUARIO` FOREIGN KEY (`IDADM_USUARIO`) REFERENCES `ADM_USUARIO` (`IDADM_USUARIO`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
