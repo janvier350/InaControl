@@ -228,6 +228,13 @@
                     </ul>
                 </li>
 
+                <li>
+                    <a href="COR_Correos.php">
+                        <i class="metismenu-icon pe-7s-mail"></i>
+                        Correos Corporativos
+                    </a>
+                </li>
+
                 <li class="app-sidebar__heading">Tutoriales</li>
                 
                 <li>
