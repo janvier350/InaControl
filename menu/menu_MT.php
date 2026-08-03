@@ -49,7 +49,7 @@
                 <?php endif; ?>
                 <li class="app-sidebar__heading">Sesión</li>
                 <li>
-                    <a href="salir.php">
+                    <a href="salir_empresa.php">
                         <i class="metismenu-icon pe-7s-close-circle"></i>
                         Cerrar Sesión
                     </a>
