@@ -215,19 +215,22 @@ mysqli_stmt_close($query);
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tipo de Soporte</label>
-                        <select class="form-select" name="idSoporte" required>
-                            <option value="">Seleccione Tipo Soporte:</option>
-                            <?php
-                              $qT = mysqli_prepare($con, "SELECT ID_TIPO_SOPORTE, SOPORTE FROM COTI_TIPO_SOPORTE WHERE ID_EMPRESA = ? AND ESTADO = 'A'");
-                              mysqli_stmt_bind_param($qT, "i", $idEmpresa);
-                              mysqli_stmt_execute($qT);
-                              $rT = mysqli_stmt_get_result($qT);
-                              while ($t = mysqli_fetch_assoc($rT)) {
-                                  echo '<option value="'.$t['ID_TIPO_SOPORTE'].'">'.htmlspecialchars($t['SOPORTE']).'</option>';
-                              }
-                              mysqli_stmt_close($qT);
-                            ?>
-                        </select>
+                        <div class="input-group">
+                            <select class="form-select" name="idSoporte" id="selTipoSoporte" required>
+                                <option value="">Seleccione Tipo Soporte:</option>
+                                <?php
+                                  $qT = mysqli_prepare($con, "SELECT ID_TIPO_SOPORTE, SOPORTE FROM COTI_TIPO_SOPORTE WHERE ID_EMPRESA = ? AND ESTADO = 'A'");
+                                  mysqli_stmt_bind_param($qT, "i", $idEmpresa);
+                                  mysqli_stmt_execute($qT);
+                                  $rT = mysqli_stmt_get_result($qT);
+                                  while ($t = mysqli_fetch_assoc($rT)) {
+                                      echo '<option value="'.$t['ID_TIPO_SOPORTE'].'">'.htmlspecialchars($t['SOPORTE']).'</option>';
+                                  }
+                                  mysqli_stmt_close($qT);
+                                ?>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" onclick="agregarServicioRapido()"><i class="bi bi-plus-lg"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Técnico</label>
@@ -289,9 +292,59 @@ mysqli_stmt_close($query);
         </div>
     </div>
 </div>
+<!-- Modal quick-add servicio -->
+<div class="modal fade" id="modalServicio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Servicio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2"><label class="form-label">Nombre del servicio</label><input class="form-control" id="nuevoServicioNombre" required></div>
+                <div class="mb-2"><label class="form-label">Descripción</label><textarea class="form-control" id="nuevoServicioDescripcion" rows="2"></textarea></div>
+                <div class="text-end"><button type="button" class="btn btn-success" onclick="guardarServicioRapido()">Guardar</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function agregarClienteRapido() {
     new bootstrap.Modal(document.getElementById('modalCliente')).show();
+}
+
+function agregarServicioRapido() {
+    new bootstrap.Modal(document.getElementById('modalServicio')).show();
+}
+
+function guardarServicioRapido() {
+    const nombre = document.getElementById('nuevoServicioNombre').value.trim();
+    const descripcion = document.getElementById('nuevoServicioDescripcion').value.trim();
+    if (!nombre) { alert('Ingrese el nombre del servicio.'); return; }
+
+    fetch('class/MT_Insert_TipoSoporte.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ soporte: nombre, descripcion: descripcion, ajax: '1' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('selTipoSoporte');
+            const opt = document.createElement('option');
+            opt.value = data.id;
+            opt.textContent = data.soporte;
+            select.appendChild(opt);
+            select.value = data.id;
+            document.getElementById('nuevoServicioNombre').value = '';
+            document.getElementById('nuevoServicioDescripcion').value = '';
+            bootstrap.Modal.getInstance(document.getElementById('modalServicio')).hide();
+        } else {
+            alert('Error: ' + (data.message || 'No se pudo guardar el servicio.'));
+        }
+    })
+    .catch(() => alert('Error de comunicación con el servidor.'));
 }
 
 (function() {
