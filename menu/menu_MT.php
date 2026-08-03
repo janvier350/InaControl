@@ -39,6 +39,12 @@
                         Calendario Soportes
                     </a>
                 </li>
+                <li>
+                    <a href="MT_Clientes.php">
+                        <i class="metismenu-icon pe-7s-users"></i>
+                        Clientes
+                    </a>
+                </li>
                 <?php if (!empty($_SESSION['mod_inventario'])): ?>
                 <li>
                     <a href="MT_Inventario.php">
