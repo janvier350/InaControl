@@ -15,17 +15,29 @@
         .sidebar-mobile-overlay { cursor: pointer; }
     }
 </style>
-<button type="button" class="mt-hamburger-btn" id="mtHamburgerBtn"><i class="bi bi-list"></i></button>
-<div class="sidebar-mobile-overlay" id="mtSidebarOverlay"></div>
 <script>
 (function() {
     function toggleSidebar() { document.body.classList.toggle('sidebar-mobile-open'); }
     function closeSidebar() { document.body.classList.remove('sidebar-mobile-open'); }
+
     document.addEventListener('DOMContentLoaded', function() {
-        var btn = document.getElementById('mtHamburgerBtn');
-        var overlay = document.getElementById('mtSidebarOverlay');
-        if (btn) btn.addEventListener('click', toggleSidebar);
-        if (overlay) overlay.addEventListener('click', closeSidebar);
+        // El botón y el overlay se crean por JS y se agregan directo al <body>,
+        // porque .app-sidebar tiene "transform" en móvil y eso lo convierte en el
+        // contenedor de referencia para cualquier elemento "fixed" dentro de él
+        // (quedaría oculto junto con el sidebar en vez de flotar sobre la pantalla).
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'mtHamburgerBtn';
+        btn.className = 'mt-hamburger-btn';
+        btn.innerHTML = '<i class="bi bi-list"></i>';
+        btn.addEventListener('click', toggleSidebar);
+        document.body.appendChild(btn);
+
+        var overlay = document.createElement('div');
+        overlay.id = 'mtSidebarOverlay';
+        overlay.className = 'sidebar-mobile-overlay';
+        overlay.addEventListener('click', closeSidebar);
+        document.body.appendChild(overlay);
     });
 })();
 </script>
