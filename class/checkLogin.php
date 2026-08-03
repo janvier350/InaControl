@@ -1,76 +1,44 @@
 <?php
+require_once("funciones.php");
 require_once("conexionBD.php");
-require_once("conexionBD_MT.php");
-
-$username = isset($_POST['user'])     ? trim($_POST['user'])     : '';
-$password = isset($_POST['password']) ? trim($_POST['password']) : '';
-
-if (!$username || !$password) {
-    echo "Usuario o Password estan vacios.";
-    echo "<br><a href='../index.php'>Volver a Intentarlo</a>";
-    exit();
-}
-
-// --- Check SUPERADMIN in MT database (solo si la BD esta disponible) ---
-$conMT = conectarse_MT();
-if ($conMT) {
-    $u = mysqli_real_escape_string($conMT, $username);
-    $sql = "SELECT u.IDADM_USUARIO, u.USUARIO, u.CONTRASENA, r.CARGO
-            FROM ADM_USUARIO u
-            INNER JOIN ADM_ROL r ON u.IDADM_ROL = r.IDADM_ROL
-            WHERE u.USUARIO = '$u' AND u.ESTADO = 'A' AND r.CARGO = 'SUPERADMIN'";
-    $res = mysqli_query($conMT, $sql);
-    if ($res) {
-        $row = mysqli_fetch_assoc($res);
-        if ($row) {
-            $stored = $row['CONTRASENA'];
-            $ok = (strlen($stored) === 32) ? (md5($password) === $stored) : password_verify($password, $stored);
-            if ($ok) {
-                session_start();
-                $_SESSION['loggedin']  = true;
-                $_SESSION['username']  = $row['USUARIO'];
-                $_SESSION['iduser']    = $row['IDADM_USUARIO'];
-                $_SESSION['rol']       = $row['CARGO'];
-                $_SESSION['start']     = time();
-                $_SESSION['expire']    = $_SESSION['start'] + (60 * 60 * 4);
-                mysqli_close($conMT);
-                echo "<script>self.location='../ADMIN_Empresas.php';</script>";
-                exit();
-            }
-        }
-    }
-    mysqli_close($conMT);
-}
-
-// --- Login regular (BD existente) ---
 $conexion = conectarse();
-
-$u2  = mysqli_real_escape_string($conexion, $username);
-$sql = "SELECT a.IDADM_USUARIO, a.USUARIO, a.CONTRASENA, b.CARGO
-        FROM ADM_USUARIO a
-        INNER JOIN ADM_ROL b ON a.IDADM_ROL = b.IDADM_ROL
-        WHERE a.USUARIO = '$u2' AND a.ESTADO = 'A'";
-
-$result = mysqli_query($conexion, $sql);
-$row    = mysqli_fetch_assoc($result);
-
-if ($row) {
-    $stored = $row['CONTRASENA'];
-    $ok = password_verify($password, $stored) || (md5($password) === $stored);
-    if ($ok) {
-        session_start();
-        $_SESSION['loggedin']  = true;
-        $_SESSION['username']  = $row['USUARIO'];
-        $_SESSION['iduser']    = $row['IDADM_USUARIO'];
-        $_SESSION['rol']       = $row['CARGO'];
-        $_SESSION['start']     = time();
-        $_SESSION['expire']    = $_SESSION['start'] + (60 * 60);
-        mysqli_close($conexion);
-        echo "<script>self.location='../SCH_Calendar_SOP.php';</script>";
-        exit();
-    }
+?>
+<?php
+if ($conexion->connect_error) {
+ die("La conexion fallo: " . $conexion->connect_error);
 }
 
-mysqli_close($conexion);
-echo "Usuario o Password estan incorrectos.";
-echo "<br><a href='../index.php'>Volver a Intentarlo</a>";
+$username = $_POST['user'];
+$password = $_POST['password'];
+
+$sql = "SELECT a.IDADM_USUARIO, a.NOMBRES, a.APELLIDOS,a.USUARIO, a.CONTRASENA, b.IDADM_ROL, b.CARGO
+    FROM ADM_USUARIO a INNER JOIN ADM_ROL b ON a.IDADM_ROL = b.IDADM_ROL
+    WHERE USUARIO = '$username' AND a.ESTADO = 'A'";
+
+$result = $conexion->query($sql);
+
+
+if ($result->num_rows > 0) {
+ }
+ $row = mysqli_fetch_array($result);
+    $PASS =$row['CONTRASENA'];
+ if (password_verify($password, $row['CONTRASENA'])) {
+    session_start();
+    $_SESSION['loggedin'] = true;
+    $_SESSION['username'] = $username;
+    $_SESSION['iduser'] = $row['IDADM_USUARIO'];
+    $_SESSION['rol'] = $row['CARGO'];
+    $_SESSION['start'] = time();
+    $_SESSION['expire'] = $_SESSION['start'] + (60 * 60);
+
+    echo "<Script language='JavaScript'>";
+    echo 'self.location = "../SCH_Calendar_SOP.php"';
+     echo"</script>";
+
+ } else {
+   echo "Usuario o Password estan incorrectos.";
+
+   echo "<br><a href='../index.php'>Volver a Intentarlo</a>";
+ }
+ mysqli_close($conexion);
+ ?>
