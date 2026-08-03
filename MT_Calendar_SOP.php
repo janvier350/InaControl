@@ -247,7 +247,13 @@ mysqli_stmt_close($query);
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción del problema</label>
-                        <textarea class="form-control" name="comentario" rows="4" maxlength="1000"></textarea>
+                        <div class="input-group">
+                            <textarea class="form-control" name="comentario" id="comentarioSoporte" rows="4" maxlength="1000"></textarea>
+                            <button type="button" class="btn btn-outline-secondary" id="btnDictado" title="Dictar por voz">
+                                <i class="bi bi-mic-fill"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Presiona el micrófono para dictar la descripción por voz.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Evidencias (imágenes)</label>
@@ -287,6 +293,51 @@ mysqli_stmt_close($query);
 function agregarClienteRapido() {
     new bootstrap.Modal(document.getElementById('modalCliente')).show();
 }
+
+(function() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const btnDictado = document.getElementById('btnDictado');
+    if (!SpeechRecognition || !btnDictado) {
+        if (btnDictado) btnDictado.style.display = 'none';
+        return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    let escuchando = false;
+    const textarea = document.getElementById('comentarioSoporte');
+
+    recognition.onresult = function(event) {
+        let textoNuevo = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            textoNuevo += event.results[i][0].transcript;
+        }
+        textarea.value = (textarea.value ? textarea.value + ' ' : '') + textoNuevo.trim();
+    };
+    recognition.onend = function() {
+        escuchando = false;
+        btnDictado.classList.remove('btn-danger');
+        btnDictado.classList.add('btn-outline-secondary');
+    };
+    recognition.onerror = function() {
+        escuchando = false;
+        btnDictado.classList.remove('btn-danger');
+        btnDictado.classList.add('btn-outline-secondary');
+    };
+
+    btnDictado.addEventListener('click', function() {
+        if (escuchando) {
+            recognition.stop();
+            return;
+        }
+        escuchando = true;
+        btnDictado.classList.remove('btn-outline-secondary');
+        btnDictado.classList.add('btn-danger');
+        recognition.start();
+    });
+})();
 </script>
 
 <!-- Modal detalle/gestión de cita -->

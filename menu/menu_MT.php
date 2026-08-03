@@ -34,6 +34,12 @@
             <ul class="vertical-nav-menu">
                 <li class="app-sidebar__heading"><?php echo htmlspecialchars($_SESSION['nombre_empresa'] ?? 'Empresa'); ?></li>
                 <li>
+                    <a href="MT_Dashboard.php">
+                        <i class="metismenu-icon pe-7s-graph"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
                     <a href="MT_Calendar_SOP.php" class="mm-active">
                         <i class="metismenu-icon pe-7s-display2"></i>
                         Calendario Soportes
@@ -43,6 +49,12 @@
                     <a href="MT_Clientes.php">
                         <i class="metismenu-icon pe-7s-users"></i>
                         Clientes
+                    </a>
+                </li>
+                <li>
+                    <a href="MT_TiposSoporte.php">
+                        <i class="metismenu-icon pe-7s-wrench"></i>
+                        Tipos de Soporte
                     </a>
                 </li>
                 <?php if (!empty($_SESSION['mod_inventario'])): ?>
