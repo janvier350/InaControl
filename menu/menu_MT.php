@@ -12,7 +12,8 @@
             font-size: 1.3rem;
         }
         .app-main__outer { padding-top: 56px; }
-        .sidebar-mobile-overlay { cursor: pointer; }
+        .sidebar-mobile-overlay { cursor: pointer; z-index: 1050 !important; }
+        body.sidebar-mobile-open .app-sidebar { z-index: 1060 !important; }
     }
 </style>
 <script>
