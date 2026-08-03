@@ -69,9 +69,9 @@ $idCalendario = mysqli_insert_id($con);
 mysqli_stmt_close($stmtInsert);
 
 // Procesar imágenes de evidencia (opcional)
+$rutasEvidencias = [];
 if (!empty($_FILES['evidencias']) && is_array($_FILES['evidencias']['name'])) {
     $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    $rutasEvidencias = [];
     $totalArchivos = count($_FILES['evidencias']['name']);
 
     for ($i = 0; $i < $totalArchivos; $i++) {
@@ -172,6 +172,11 @@ if ($correoCliente || $correoContacto) {
             <tr><td style='padding:4px 32px 16px;'>
               <p style='font-size:13px;font-weight:bold;color:#0f3460;margin:0 0 6px;'>Resumen de actividades:</p>
               <div style='background:#f9f9f9;border-radius:4px;padding:12px 16px;font-size:13px;color:#444;line-height:1.6;border:1px solid #e0e0e0;'>$comentarioHtml</div>
+            </td></tr>" : "") .
+            (!empty($rutasEvidencias) ? "
+            <tr><td style='padding:4px 32px 16px;'>
+              <p style='font-size:13px;font-weight:bold;color:#0f3460;margin:0 0 6px;'>Evidencias adjuntas: " . count($rutasEvidencias) . "</p>
+              <p style='font-size:13px;color:#777;margin:0;'>Se incluyen como archivos adjuntos en este correo.</p>
             </td></tr>" : "") . "
             <tr><td style='background:#e8f0f8;padding:16px 32px;text-align:center;'>
               <p style='margin:0;font-size:12px;color:#999;'>Generado automáticamente. Por favor no responda a este mensaje.</p>
@@ -216,6 +221,10 @@ if ($correoCliente || $correoContacto) {
         $mail->Subject = '=?UTF-8?B?' . base64_encode('Soporte Técnico Programado - ' . $nombreEmpresa) . '?=';
         $mail->Body    = $htmlBody;
         $mail->AltBody = $textBody;
+
+        foreach ($rutasEvidencias as $rutaEvidencia) {
+            $mail->addAttachment(__DIR__ . '/../' . $rutaEvidencia);
+        }
 
         $mail->send();
     } catch (Exception $e) {
