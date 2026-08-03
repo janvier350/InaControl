@@ -17,6 +17,10 @@ if (time() > $_SESSION['expire']) {
 }
 
 $con = conectarse_MT();
+if (!$con) {
+    die("<h3 style='font-family:sans-serif;color:#900;padding:2rem;'>No se pudo conectar a la base de datos multi-tenant. Revisa class/db_config_MT.php.</h3>");
+}
+mysqli_report(MYSQLI_REPORT_OFF);
 
 // Empresa seleccionada para gestionar usuarios
 $empresaActiva = isset($_GET['empresa']) ? (int)$_GET['empresa'] : null;
@@ -83,9 +87,17 @@ $empresaActiva = isset($_GET['empresa']) ? (int)$_GET['empresa'] : null;
 
     <!-- KPIs rápidos -->
     <?php
-    $totalEmpresas  = mysqli_fetch_row($con->query("SELECT COUNT(*) FROM EMPRESA WHERE ESTADO='A'"))[0];
-    $totalUsuarios  = mysqli_fetch_row($con->query("SELECT COUNT(*) FROM ADM_USUARIO WHERE ESTADO='A'"))[0];
-    $empresasPremium= mysqli_fetch_row($con->query("SELECT COUNT(*) FROM EMPRESA WHERE PLAN='PREMIUM' AND ESTADO='A'"))[0];
+    function mt_count($con, $sql) {
+        $r = mysqli_query($con, $sql);
+        if (!$r) {
+            echo "<div class='alert alert-danger'>Error SQL: " . htmlspecialchars(mysqli_error($con)) . " (consulta: " . htmlspecialchars($sql) . ")</div>";
+            return 0;
+        }
+        return mysqli_fetch_row($r)[0];
+    }
+    $totalEmpresas   = mt_count($con, "SELECT COUNT(*) FROM EMPRESA WHERE ESTADO='A'");
+    $totalUsuarios   = mt_count($con, "SELECT COUNT(*) FROM ADM_USUARIO WHERE ESTADO='A'");
+    $empresasPremium = mt_count($con, "SELECT COUNT(*) FROM EMPRESA WHERE PLAN='PREMIUM' AND ESTADO='A'");
     ?>
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -131,8 +143,12 @@ $empresaActiva = isset($_GET['empresa']) ? (int)$_GET['empresa'] : null;
              FROM EMPRESA E
              LEFT JOIN EMPRESA_CONFIG C ON E.ID_EMPRESA = C.ID_EMPRESA
              ORDER BY E.ESTADO DESC, E.NOMBRE ASC";
-    $qE = $con->query($sqlE);
-    while ($e = mysqli_fetch_array($qE)):
+    $qE = mysqli_query($con, $sqlE);
+    if (!$qE) {
+        echo "<div class='alert alert-danger'>Error SQL en listado de empresas: " . htmlspecialchars(mysqli_error($con)) . "</div>";
+        $qE = [];
+    }
+    while ($qE && ($e = mysqli_fetch_array($qE))):
         $planClass = strtolower($e['PLAN']);
     ?>
     <div class="col-md-6 col-lg-4">
