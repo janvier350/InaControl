@@ -5,7 +5,7 @@
         .mt-hamburger-btn {
             display: flex !important;
             position: fixed !important; top: 12px !important; left: 12px !important;
-            z-index: 99999 !important;
+            z-index: 999999 !important;
             width: 44px; height: 44px; border-radius: 10px;
             background: #0f3460; color: #fff; border: none;
             align-items: center; justify-content: center;
@@ -14,54 +14,56 @@
         }
         .app-main__outer { padding-top: 56px !important; }
 
-        /* Sistema propio, aislado del mecanismo del tema (sidebar-mobile-open),
-           para no depender de su transform/z-index internos. */
+        /* Menú a pantalla completa cuando está abierto: sin overlay separado,
+           así no hay ningún otro elemento con el que pueda competir por el clic. */
         .app-sidebar {
             position: fixed !important;
             top: 0 !important; left: 0 !important;
             transform: translateX(-100%) !important;
-            width: 270px !important; min-width: 270px !important; flex: none !important;
+            width: 100vw !important; min-width: 100vw !important; flex: none !important;
             height: 100vh !important;
             margin-top: 0 !important; padding-top: 60px !important;
             overflow-y: auto !important;
-            z-index: 99997 !important;
+            z-index: 999998 !important;
             transition: transform .25s ease !important;
+            background: #fff !important;
         }
         body.mt-open .app-sidebar { transform: translateX(0) !important; }
 
-        .mt-overlay {
+        .mt-close-btn {
             display: none;
-            position: fixed !important; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 99996 !important;
+            position: absolute; top: 12px; right: 16px; z-index: 999999;
+            width: 40px; height: 40px; border-radius: 10px;
+            background: #f1f1f1; border: none; font-size: 1.4rem; color: #333;
         }
-        body.mt-open .mt-overlay { display: block; }
+        body.mt-open .mt-close-btn { display: block; }
     }
 </style>
 <script>
 (function() {
-    function toggleSidebar() { document.body.classList.toggle('mt-open'); }
+    function openSidebar() { document.body.classList.add('mt-open'); }
     function closeSidebar() { document.body.classList.remove('mt-open'); }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // El botón y el overlay se crean por JS y se agregan directo al <body>,
-        // fuera de .app-sidebar, para no heredar su "transform" ni quedar
-        // atrapados dentro de su contexto de apilamiento.
+        var sidebar = document.querySelector('.app-sidebar');
+
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.id = 'mtHamburgerBtn';
         btn.className = 'mt-hamburger-btn';
         btn.innerHTML = '<i class="bi bi-list"></i>';
-        btn.addEventListener('click', toggleSidebar);
+        btn.addEventListener('click', openSidebar);
         document.body.appendChild(btn);
 
-        var overlay = document.createElement('div');
-        overlay.id = 'mtSidebarOverlay';
-        overlay.className = 'mt-overlay';
-        overlay.addEventListener('click', closeSidebar);
-        document.body.appendChild(overlay);
+        if (sidebar) {
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'mt-close-btn';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.addEventListener('click', closeSidebar);
+            sidebar.appendChild(closeBtn);
+        }
 
-        // Cerrar el menú al tocar cualquier enlace de navegación
         document.querySelectorAll('.app-sidebar .vertical-nav-menu a').forEach(function(a) {
             a.addEventListener('click', closeSidebar);
         });
