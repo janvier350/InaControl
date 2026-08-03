@@ -1,6 +1,7 @@
 
 <style>
     .mt-hamburger-btn { display: none; }
+    .mt-close-btn { display: none; }
     @media (max-width: 991.98px) {
         .mt-hamburger-btn {
             display: flex !important;
