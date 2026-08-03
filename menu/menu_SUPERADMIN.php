@@ -20,7 +20,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white d-flex align-items-center gap-2 rounded"
-                   href="../class/logout.php">
+                   href="../salir.php">
                     <i class="fa fa-sign-out"></i> Cerrar Sesión
                 </a>
             </li>
