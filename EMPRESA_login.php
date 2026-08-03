@@ -9,12 +9,13 @@ session_start();
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Iniciar Sesión</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center" style="min-height:100vh;">
   <div class="card shadow" style="width:100%; max-width:380px;">
     <div class="card-body p-4">
       <div class="text-center mb-3">
-        <img src="images/inasar_logo.png" style="max-height:60px;" alt="Logo">
+        <i class="bi bi-shield-lock" style="font-size:2.8rem;color:#0f3460;"></i>
         <h4 class="mt-2 mb-0">Iniciar Sesión</h4>
       </div>
       <?php if (isset($_GET['error'])): ?>
