@@ -16,10 +16,10 @@ if (!$conMT) {
 }
 
 $u = mysqli_real_escape_string($conMT, $username);
-$sql = "SELECT u.IDADM_USUARIO, u.USUARIO, u.CONTRASENA, r.CARGO
+$sql = "SELECT u.IDADM_USUARIO, u.USUARIO, u.CONTRASENA, r.ROL
         FROM ADM_USUARIO u
         INNER JOIN ADM_ROL r ON u.IDADM_ROL = r.IDADM_ROL
-        WHERE u.USUARIO = '$u' AND u.ESTADO = 'A' AND r.CARGO = 'SUPERADMIN'";
+        WHERE u.USUARIO = '$u' AND u.ESTADO = 'A' AND r.ROL = 'SUPERADMIN'";
 
 $res = mysqli_query($conMT, $sql);
 if (!$res) {
@@ -47,7 +47,7 @@ session_start();
 $_SESSION['loggedin'] = true;
 $_SESSION['username']  = $row['USUARIO'];
 $_SESSION['iduser']    = $row['IDADM_USUARIO'];
-$_SESSION['rol']       = $row['CARGO'];
+$_SESSION['rol']       = $row['ROL'];
 $_SESSION['start']     = time();
 $_SESSION['expire']    = $_SESSION['start'] + (60 * 60 * 4);
 
