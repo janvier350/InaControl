@@ -103,6 +103,9 @@
     </div>
     <div class="scrollbar-sidebar">
         <div class="app-sidebar__inner">
+            <div class="text-center" style="padding:10px 0 4px;">
+                <span style="font-weight:700; letter-spacing:2px; color:#0f3460; font-size:1.05rem;">KONTROL</span>
+            </div>
             <ul class="vertical-nav-menu">
                 <li class="app-sidebar__heading"><?php echo htmlspecialchars($_SESSION['nombre_empresa'] ?? 'Empresa'); ?></li>
                 <li>
@@ -127,6 +130,12 @@
                     <a href="MT_TiposSoporte.php">
                         <i class="metismenu-icon pe-7s-wrench"></i>
                         Tipos de Soporte
+                    </a>
+                </li>
+                <li>
+                    <a href="MT_Reportes.php">
+                        <i class="metismenu-icon pe-7s-note2"></i>
+                        Reportes
                     </a>
                 </li>
                 <?php if (!empty($_SESSION['mod_inventario'])): ?>

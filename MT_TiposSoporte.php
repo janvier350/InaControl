@@ -30,7 +30,7 @@ $tipos = mysqli_stmt_get_result($stmt);
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Tipos de Soporte</title>
+    <title>Kontrol - Tipos de Soporte</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
