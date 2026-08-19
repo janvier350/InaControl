@@ -190,6 +190,38 @@
                     </a>
                 </li>
 
+                <li class="app-sidebar__heading">CCTV</li>
+                <li>
+                    <a href="CCTV_Dashboard.php">
+                        <i class="metismenu-icon pe-7s-graph3"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="CCTV_DVR.php">
+                        <i class="metismenu-icon pe-7s-server"></i>
+                        DVR / NVR
+                    </a>
+                </li>
+                <li>
+                    <a href="CCTV_Camaras.php">
+                        <i class="metismenu-icon pe-7s-camera"></i>
+                        Cámaras
+                    </a>
+                </li>
+                <li>
+                    <a href="CCTV_Mapa.php">
+                        <i class="metismenu-icon pe-7s-map"></i>
+                        Mapa de Conexiones
+                    </a>
+                </li>
+                <li>
+                    <a href="CCTV_Incidencias.php">
+                        <i class="metismenu-icon pe-7s-tools"></i>
+                        Incidencias
+                    </a>
+                </li>
+
                 <li class="app-sidebar__heading">Tutoriales</li>
                 
                 <li>
