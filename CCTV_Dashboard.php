@@ -51,11 +51,11 @@ $qr = $conexion->query(
 );
 while ($r = mysqli_fetch_assoc($qr)) { $rankingLabels[] = $r['EQUIPO']; $rankingData[] = (int)$r['TOTAL']; }
 
-// Cámaras próximas a antigüedad crítica (entre 3 y 4 años) - alerta preventiva
+// Cámaras a vigilar: desde 3 años (alerta preventiva) en adelante, incluye las que ya superan 4 años (mismo criterio que la tarjeta KPI)
 $qAlerta = $conexion->query(
     "SELECT MARCA, MODELO, UBICACION, FECHA_COMPRA FROM CCTV_CAMARA
      WHERE ESTADO='A' AND FECHA_COMPRA IS NOT NULL
-       AND FECHA_COMPRA BETWEEN DATE_SUB(CURDATE(), INTERVAL 4 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 3 YEAR)
+       AND FECHA_COMPRA <= DATE_SUB(CURDATE(), INTERVAL 3 YEAR)
      ORDER BY FECHA_COMPRA ASC"
 );
 ?>
@@ -138,9 +138,9 @@ $qAlerta = $conexion->query(
                     </div>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3 align-items-start">
                     <div class="col-md-6">
-                        <div class="card shadow-sm h-100"><div class="card-body">
+                        <div class="card shadow-sm"><div class="card-body">
                             <h6 class="mb-3">Distribución por tipo de cámara</h6>
                             <div style="position:relative; height:260px;">
                                 <canvas id="chartTipos"></canvas>
@@ -148,7 +148,7 @@ $qAlerta = $conexion->query(
                         </div></div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card shadow-sm h-100"><div class="card-body">
+                        <div class="card shadow-sm"><div class="card-body">
                             <h6 class="mb-3">Top equipos con más fallas / reparaciones</h6>
                             <div style="position:relative; height:260px;">
                                 <canvas id="chartRanking"></canvas>
@@ -159,17 +159,28 @@ $qAlerta = $conexion->query(
 
                 <div class="card shadow-sm mt-3">
                     <div class="card-body">
-                        <h6 class="mb-3"><i class="bi bi-exclamation-circle text-warning"></i> Cámaras a vigilar (entre 3 y 4 años de uso — considerar plan de reemplazo)</h6>
+                        <h6 class="mb-3"><i class="bi bi-exclamation-circle text-warning"></i> Cámaras a vigilar (3+ años de uso — considerar plan de reemplazo)</h6>
                         <table class="table table-sm">
-                            <thead><tr><th>Marca / Modelo</th><th>Ubicación</th><th>Fecha de compra</th></tr></thead>
+                            <thead><tr><th>Marca / Modelo</th><th>Ubicación</th><th>Fecha de compra</th><th>Antigüedad</th></tr></thead>
                             <tbody>
                             <?php if (mysqli_num_rows($qAlerta) === 0): ?>
-                                <tr><td colspan="3" class="text-center text-muted">Sin cámaras en este rango de antigüedad.</td></tr>
-                            <?php else: while ($a = mysqli_fetch_assoc($qAlerta)): ?>
+                                <tr><td colspan="4" class="text-center text-muted">Sin cámaras en este rango de antigüedad.</td></tr>
+                            <?php else: while ($a = mysqli_fetch_assoc($qAlerta)):
+                                $fechaCompraObj = new DateTime($a['FECHA_COMPRA']);
+                                $anios = $fechaCompraObj->diff(new DateTime())->y;
+                                $esCritica = $anios >= 4;
+                            ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($a['MARCA'].' '.$a['MODELO']); ?></td>
                                     <td><?php echo htmlspecialchars($a['UBICACION'] ?: '-'); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($a['FECHA_COMPRA'])); ?></td>
+                                    <td>
+                                        <?php if ($esCritica): ?>
+                                            <span class="badge bg-danger"><?php echo $anios; ?> años - reemplazo</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning text-dark"><?php echo $anios; ?> años - vigilar</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php endwhile; endif; ?>
                             </tbody>
