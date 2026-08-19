@@ -788,6 +788,15 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                             <label class="form-label">Descripción</label>
                             <textarea class="form-control" id="editComentario" rows="4" maxlength="1000"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Evidencias actuales</label>
+                            <div id="editEvidenciasActuales" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                            <div id="editEvidenciasVacio" class="text-muted small" style="display:none;">Sin evidencias registradas.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Agregar nuevas evidencias</label>
+                            <input type="file" class="form-control" id="editEvidenciasNuevas" multiple accept="image/*">
+                        </div>
                     </div>
 
                     <input type="hidden" id="idCita" name="id">
@@ -893,6 +902,42 @@ function toggleEditCita(mostrar) {
     if (btnCancelar)  btnCancelar.style.display  = mostrar ? 'none' : 'inline-block';
 }
 
+let evidenciasEdicionActuales = [];
+let evidenciasEdicionEliminar = [];
+
+function cargarEvidenciasEdicion(evidencias) {
+    evidenciasEdicionActuales = evidencias.slice();
+    evidenciasEdicionEliminar = [];
+    document.getElementById('editEvidenciasNuevas').value = '';
+    renderEvidenciasEdicion();
+}
+
+function renderEvidenciasEdicion() {
+    const cont = document.getElementById('editEvidenciasActuales');
+    const vacio = document.getElementById('editEvidenciasVacio');
+    const visibles = evidenciasEdicionActuales.filter(src => evidenciasEdicionEliminar.indexOf(src) === -1);
+
+    if (!visibles.length) {
+        cont.innerHTML = '';
+        vacio.style.display = 'block';
+        return;
+    }
+    vacio.style.display = 'none';
+    cont.innerHTML = visibles.map(src => `
+        <div style="position:relative;">
+            <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">
+            <button type="button" onclick="quitarEvidenciaEdicion('${src}')"
+                style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;
+                       background:#dc3545;color:#fff;border:none;line-height:1;font-size:.85rem;">&times;</button>
+        </div>
+    `).join('');
+}
+
+function quitarEvidenciaEdicion(src) {
+    evidenciasEdicionEliminar.push(src);
+    renderEvidenciasEdicion();
+}
+
 function guardarEdicionCita() {
     const id = document.getElementById('idCita').value;
     const fechaSoporte = document.getElementById('editFechaSoporte').value;
@@ -911,10 +956,24 @@ function guardarEdicionCita() {
     btnGuardar.disabled = true;
     btnGuardar.textContent = 'Guardando...';
 
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('fechaSoporte', fechaSoporte);
+    formData.append('horaInicio', horaInicio);
+    formData.append('horaFin', horaFin);
+    formData.append('idUsuario', idUsuario);
+    formData.append('idSoporte', idSoporte);
+    formData.append('comentario', comentario);
+    formData.append('evidenciasEliminar', JSON.stringify(evidenciasEdicionEliminar));
+
+    const inputNuevas = document.getElementById('editEvidenciasNuevas');
+    for (let i = 0; i < inputNuevas.files.length; i++) {
+        formData.append('evidenciasNuevas[]', inputNuevas.files[i]);
+    }
+
     fetch('class/Editar_Soporte.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ id, fechaSoporte, horaInicio, horaFin, idUsuario, idSoporte, comentario })
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
@@ -1020,6 +1079,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('editTecnico').value      = props.idTecnico || '';
             document.getElementById('editTipoSoporte').value  = props.idSoporte || '';
             document.getElementById('editComentario').value   = (props.comentario || '').replace(/\\r\\n|\\n/g, '\n');
+            cargarEvidenciasEdicion(props.evidencias || []);
 
             // Asegurar que el modal inicie en modo "vista" (no edición)
             toggleEditCita(false);
