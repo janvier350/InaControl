@@ -53,6 +53,7 @@ while ($c = mysqli_fetch_assoc($qc)) {
             border: 1px solid #eee; border-radius: 8px; margin-bottom: 6px; background: #fafbfc;
         }
         .cam-dot { width: 10px; height: 10px; border-radius: 50%; background: #3ac47d; flex-shrink: 0; }
+        .cam-list { max-height: 320px; overflow-y: auto; padding-right: 4px; }
     </style>
 </head>
 <body>
@@ -110,6 +111,7 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                     <i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($d['UBICACION'] ?: 'Sin ubicación'); ?>
                                     <?php if ($d['IP']): ?> &nbsp;|&nbsp; <i class="bi bi-hdd"></i> <?php echo htmlspecialchars($d['IP']); ?><?php endif; ?>
                                 </p>
+                                <div class="cam-list">
                                 <?php if (empty($d['CAMARAS'])): ?>
                                     <p class="text-muted small">Sin cámaras conectadas.</p>
                                 <?php else: foreach ($d['CAMARAS'] as $cam): ?>
@@ -123,6 +125,7 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                         </div>
                                     </div>
                                 <?php endforeach; endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -136,6 +139,7 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                 <span class="badge bg-secondary"><?php echo count($independientes); ?></span>
                             </div>
                             <div class="card-body">
+                                <div class="cam-list">
                                 <?php foreach ($independientes as $cam): ?>
                                     <div class="cam-item">
                                         <span class="cam-dot" style="background:#6c757d;"></span>
@@ -147,6 +151,7 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     </div>

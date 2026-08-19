@@ -9,6 +9,7 @@ $tipo             = mysqli_real_escape_string($conexion, trim($_POST['tipo'] ?? 
 $marca            = mysqli_real_escape_string($conexion, trim($_POST['marca'] ?? ''));
 $modelo           = mysqli_real_escape_string($conexion, trim($_POST['modelo'] ?? ''));
 $canales          = isset($_POST['canales']) && $_POST['canales'] !== '' ? (int)$_POST['canales'] : 'NULL';
+$capacidadDisco   = mysqli_real_escape_string($conexion, trim($_POST['capacidadDisco'] ?? ''));
 $ip               = mysqli_real_escape_string($conexion, trim($_POST['ip'] ?? ''));
 $numeroSerie      = mysqli_real_escape_string($conexion, trim($_POST['numeroSerie'] ?? ''));
 $claveAcceso      = mysqli_real_escape_string($conexion, trim($_POST['claveAcceso'] ?? ''));
@@ -42,7 +43,7 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
 }
 
 $sql = "UPDATE CCTV_DVR SET
-    TIPO='$tipo', MARCA='$marca', MODELO='$modelo', IP='$ip', CANALES=$canales,
+    TIPO='$tipo', MARCA='$marca', MODELO='$modelo', IP='$ip', CANALES=$canales, CAPACIDAD_DISCO='$capacidadDisco',
     NUMERO_SERIE='$numeroSerie', CLAVE_ACCESO='$claveAcceso', CLAVE_HIKCONNECT='$claveHikconnect',
     UBICACION='$ubicacion', FECHA_COMPRA=$fechaCompraSql, OBSERVACION='$observacion',
     COMENTARIO='$comentario', ESTADO='$estado' $fotoSql
