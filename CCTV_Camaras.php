@@ -147,11 +147,15 @@ $rol_usuario = $_SESSION["rol"];
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Foto</label>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Foto (ubicación / estado de la cámara)</label>
                                             <input type="file" class="form-control" name="foto" accept="image/*">
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Captura de vista (lo que apunta la cámara)</label>
+                                            <input type="file" class="form-control" name="capturaVista" accept="image/*">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
                                             <label class="form-label">Observación</label>
                                             <textarea class="form-control" name="observacion" rows="2"></textarea>
                                         </div>
@@ -216,7 +220,12 @@ $rol_usuario = $_SESSION["rol"];
                                             $filtro = strtolower($c['MARCA'].' '.$c['MODELO'].' '.$c['IP'].' '.$c['UBICACION']);
                                         ?>
                                             <tr data-filtro="<?php echo htmlspecialchars($filtro); ?>" data-dvr="<?php echo (int)$c['ID_DVR']; ?>" data-tipo="<?php echo htmlspecialchars($c['TIPO_CAMARA']); ?>">
-                                                <td><img src="<?php echo htmlspecialchars($foto); ?>" style="width:48px;height:48px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="verImagenCam('<?php echo htmlspecialchars($foto); ?>')"></td>
+                                                <td>
+                                                    <img src="<?php echo htmlspecialchars($foto); ?>" title="Ubicación" style="width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="verImagenCam('<?php echo htmlspecialchars($foto); ?>')">
+                                                    <?php if (!empty($c['CAPTURA_VISTA'])): ?>
+                                                    <img src="<?php echo htmlspecialchars($c['CAPTURA_VISTA']); ?>" title="Vista de la cámara" style="width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;margin-left:3px;" onclick="verImagenCam('<?php echo htmlspecialchars($c['CAPTURA_VISTA']); ?>')">
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($c['TIPO_CAMARA']); ?></span></td>
                                                 <td><strong><?php echo htmlspecialchars($c['MARCA']); ?></strong><br><small class="text-muted"><?php echo htmlspecialchars($c['MODELO']); ?></small></td>
                                                 <td><?php echo htmlspecialchars($c['IP'] ?: '-'); ?></td>
@@ -290,11 +299,15 @@ $rol_usuario = $_SESSION["rol"];
                         <div class="col-md-4 mb-3"><label class="form-label">Fecha compra</label><input type="date" class="form-control" name="fechaCompra" id="editFechaCompraCam"></div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nueva foto (opcional)</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Nueva foto de ubicación (opcional)</label>
                             <input type="file" class="form-control" name="foto" accept="image/*">
                         </div>
-                        <div class="col-md-6 mb-3"><label class="form-label">Observación</label><textarea class="form-control" name="observacion" id="editObservacionCam" rows="2"></textarea></div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Nueva captura de vista (opcional)</label>
+                            <input type="file" class="form-control" name="capturaVista" accept="image/*">
+                        </div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Observación</label><textarea class="form-control" name="observacion" id="editObservacionCam" rows="2"></textarea></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Estado</label>
