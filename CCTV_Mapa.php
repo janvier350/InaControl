@@ -53,7 +53,6 @@ while ($c = mysqli_fetch_assoc($qc)) {
             border: 1px solid #eee; border-radius: 8px; margin-bottom: 6px; background: #fafbfc;
         }
         .cam-dot { width: 10px; height: 10px; border-radius: 50%; background: #3ac47d; flex-shrink: 0; }
-        .cam-list { max-height: 320px; overflow-y: auto; padding-right: 4px; }
     </style>
 </head>
 <body>
@@ -98,10 +97,10 @@ while ($c = mysqli_fetch_assoc($qc)) {
                     </div>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3 align-items-start">
                     <?php foreach ($dvrs as $d): ?>
                     <div class="col-md-6 col-lg-4">
-                        <div class="card dvr-card shadow-sm h-100">
+                        <div class="card dvr-card shadow-sm">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <span><i class="bi bi-hdd-network me-1"></i> <?php echo htmlspecialchars($d['TIPO'].' - '.$d['MARCA'].' '.$d['MODELO']); ?></span>
                                 <span class="badge bg-primary"><?php echo count($d['CAMARAS']); ?>/<?php echo $d['CANALES'] ?: '?'; ?> canales</span>
@@ -133,7 +132,7 @@ while ($c = mysqli_fetch_assoc($qc)) {
 
                     <?php if (!empty($independientes)): ?>
                     <div class="col-md-6 col-lg-4">
-                        <div class="card shadow-sm h-100" style="border-left:5px solid #6c757d;">
+                        <div class="card shadow-sm" style="border-left:5px solid #6c757d;">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <span><i class="bi bi-camera-video me-1"></i> Cámaras independientes</span>
                                 <span class="badge bg-secondary"><?php echo count($independientes); ?></span>

@@ -23,25 +23,32 @@ if (!$marca) {
     exit();
 }
 
-$foto = '';
-if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    $extension = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-    if (in_array($extension, $extensionesPermitidas)) {
-        if (!is_dir(__DIR__ . '/../images/cctv')) {
-            mkdir(__DIR__ . '/../images/cctv', 0755, true);
-        }
-        $nombreArchivo = 'camara_' . time() . '_' . mt_rand(1000, 9999) . '.' . $extension;
-        $rutaDestino = __DIR__ . '/../images/cctv/' . $nombreArchivo;
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $rutaDestino)) {
-            $foto = 'images/cctv/' . $nombreArchivo;
-        }
+function subirImagenCamara($campo) {
+    if (!isset($_FILES[$campo]) || $_FILES[$campo]['error'] !== UPLOAD_ERR_OK) {
+        return '';
     }
+    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $extension = strtolower(pathinfo($_FILES[$campo]['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, $extensionesPermitidas)) {
+        return '';
+    }
+    if (!is_dir(__DIR__ . '/../images/cctv')) {
+        mkdir(__DIR__ . '/../images/cctv', 0755, true);
+    }
+    $nombreArchivo = 'camara_' . $campo . '_' . time() . '_' . mt_rand(1000, 9999) . '.' . $extension;
+    $rutaDestino = __DIR__ . '/../images/cctv/' . $nombreArchivo;
+    if (move_uploaded_file($_FILES[$campo]['tmp_name'], $rutaDestino)) {
+        return 'images/cctv/' . $nombreArchivo;
+    }
+    return '';
 }
 
+$foto = subirImagenCamara('foto');
+$capturaVista = subirImagenCamara('capturaVista');
+
 $sql = "INSERT INTO CCTV_CAMARA
-    (ID_DVR, MARCA, MODELO, IP, NUMERO_SERIE, USUARIO, CLAVE, CLAVE_HIKCONNECT, TIPO_CAMARA, UBICACION, FECHA_COMPRA, OBSERVACION, FOTO, ESTADO)
-    VALUES ($idDvr, '$marca', '$modelo', '$ip', '$numeroSerie', '$usuario', '$clave', '$claveHikconnect', '$tipoCamara', '$ubicacion', $fechaCompraSql, '$observacion', '$foto', 'A')";
+    (ID_DVR, MARCA, MODELO, IP, NUMERO_SERIE, USUARIO, CLAVE, CLAVE_HIKCONNECT, TIPO_CAMARA, UBICACION, FECHA_COMPRA, OBSERVACION, FOTO, CAPTURA_VISTA, ESTADO)
+    VALUES ($idDvr, '$marca', '$modelo', '$ip', '$numeroSerie', '$usuario', '$clave', '$claveHikconnect', '$tipoCamara', '$ubicacion', $fechaCompraSql, '$observacion', '$foto', '$capturaVista', 'A')";
 
 if ($conexion->query($sql) === TRUE) {
     echo "<script>alert('Cámara registrada correctamente.'); window.location.href = '../CCTV_Camaras.php';</script>";

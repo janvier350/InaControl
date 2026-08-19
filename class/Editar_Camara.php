@@ -25,26 +25,42 @@ if (!$idCamara || !$marca) {
     exit();
 }
 
-$fotoSql = '';
-if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    $extension = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-    if (in_array($extension, $extensionesPermitidas)) {
-        if (!is_dir(__DIR__ . '/../images/cctv')) {
-            mkdir(__DIR__ . '/../images/cctv', 0755, true);
-        }
-        $nombreArchivo = 'camara_' . $idCamara . '_' . time() . '.' . $extension;
-        $rutaDestino = __DIR__ . '/../images/cctv/' . $nombreArchivo;
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $rutaDestino)) {
-            $fotoSql = ", FOTO = '" . mysqli_real_escape_string($conexion, 'images/cctv/' . $nombreArchivo) . "'";
-        }
+function subirImagenCamaraEdit($conexion, $campo, $idCamara) {
+    if (!isset($_FILES[$campo]) || $_FILES[$campo]['error'] !== UPLOAD_ERR_OK) {
+        return '';
     }
+    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $extension = strtolower(pathinfo($_FILES[$campo]['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, $extensionesPermitidas)) {
+        return '';
+    }
+    if (!is_dir(__DIR__ . '/../images/cctv')) {
+        mkdir(__DIR__ . '/../images/cctv', 0755, true);
+    }
+    $nombreArchivo = 'camara_' . $campo . '_' . $idCamara . '_' . time() . '.' . $extension;
+    $rutaDestino = __DIR__ . '/../images/cctv/' . $nombreArchivo;
+    if (move_uploaded_file($_FILES[$campo]['tmp_name'], $rutaDestino)) {
+        return mysqli_real_escape_string($conexion, 'images/cctv/' . $nombreArchivo);
+    }
+    return '';
+}
+
+$fotoSql = '';
+$nuevaFoto = subirImagenCamaraEdit($conexion, 'foto', $idCamara);
+if ($nuevaFoto) {
+    $fotoSql = ", FOTO = '$nuevaFoto'";
+}
+
+$capturaVistaSql = '';
+$nuevaCaptura = subirImagenCamaraEdit($conexion, 'capturaVista', $idCamara);
+if ($nuevaCaptura) {
+    $capturaVistaSql = ", CAPTURA_VISTA = '$nuevaCaptura'";
 }
 
 $sql = "UPDATE CCTV_CAMARA SET
     TIPO_CAMARA='$tipoCamara', MARCA='$marca', MODELO='$modelo', ID_DVR=$idDvr, IP='$ip',
     NUMERO_SERIE='$numeroSerie', USUARIO='$usuario', CLAVE='$clave', CLAVE_HIKCONNECT='$claveHikconnect',
-    UBICACION='$ubicacion', FECHA_COMPRA=$fechaCompraSql, OBSERVACION='$observacion', ESTADO='$estado' $fotoSql
+    UBICACION='$ubicacion', FECHA_COMPRA=$fechaCompraSql, OBSERVACION='$observacion', ESTADO='$estado' $fotoSql $capturaVistaSql
     WHERE ID_CAMARA = $idCamara";
 
 if ($conexion->query($sql) === TRUE) {
