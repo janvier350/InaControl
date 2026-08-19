@@ -8,6 +8,7 @@ $tipo             = mysqli_real_escape_string($conexion, trim($_POST['tipo'] ?? 
 $marca            = mysqli_real_escape_string($conexion, trim($_POST['marca'] ?? ''));
 $modelo           = mysqli_real_escape_string($conexion, trim($_POST['modelo'] ?? ''));
 $canales          = isset($_POST['canales']) && $_POST['canales'] !== '' ? (int)$_POST['canales'] : 'NULL';
+$capacidadDisco   = mysqli_real_escape_string($conexion, trim($_POST['capacidadDisco'] ?? ''));
 $ip               = mysqli_real_escape_string($conexion, trim($_POST['ip'] ?? ''));
 $numeroSerie      = mysqli_real_escape_string($conexion, trim($_POST['numeroSerie'] ?? ''));
 $claveAcceso      = mysqli_real_escape_string($conexion, trim($_POST['claveAcceso'] ?? ''));
@@ -41,8 +42,8 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
 }
 
 $sql = "INSERT INTO CCTV_DVR
-    (TIPO, MARCA, MODELO, IP, CANALES, NUMERO_SERIE, CLAVE_ACCESO, CLAVE_HIKCONNECT, UBICACION, FECHA_COMPRA, OBSERVACION, COMENTARIO, FOTO, ESTADO)
-    VALUES ('$tipo', '$marca', '$modelo', '$ip', $canales, '$numeroSerie', '$claveAcceso', '$claveHikconnect', '$ubicacion', $fechaCompraSql, '$observacion', '$comentario', '$foto', 'A')";
+    (TIPO, MARCA, MODELO, IP, CANALES, CAPACIDAD_DISCO, NUMERO_SERIE, CLAVE_ACCESO, CLAVE_HIKCONNECT, UBICACION, FECHA_COMPRA, OBSERVACION, COMENTARIO, FOTO, ESTADO)
+    VALUES ('$tipo', '$marca', '$modelo', '$ip', $canales, '$capacidadDisco', '$numeroSerie', '$claveAcceso', '$claveHikconnect', '$ubicacion', $fechaCompraSql, '$observacion', '$comentario', '$foto', 'A')";
 
 if ($conexion->query($sql) === TRUE) {
     echo "<script>alert('DVR/NVR registrado correctamente.'); window.location.href = '../CCTV_DVR.php';</script>";

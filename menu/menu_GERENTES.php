@@ -1,4 +1,7 @@
 
+    <style>
+        .app-sidebar .scrollbar-sidebar { overflow-y: auto !important; max-height: calc(100vh - 60px) !important; }
+    </style>
     <div class="app-header__logo">
                     <div class="logo-src"></div>
                     <div class="header__pane ml-auto">

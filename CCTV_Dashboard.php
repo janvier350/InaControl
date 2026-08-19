@@ -142,13 +142,17 @@ $qAlerta = $conexion->query(
                     <div class="col-md-6">
                         <div class="card shadow-sm h-100"><div class="card-body">
                             <h6 class="mb-3">Distribución por tipo de cámara</h6>
-                            <canvas id="chartTipos" height="140"></canvas>
+                            <div style="position:relative; height:260px;">
+                                <canvas id="chartTipos"></canvas>
+                            </div>
                         </div></div>
                     </div>
                     <div class="col-md-6">
                         <div class="card shadow-sm h-100"><div class="card-body">
                             <h6 class="mb-3">Top equipos con más fallas / reparaciones</h6>
-                            <canvas id="chartRanking" height="140"></canvas>
+                            <div style="position:relative; height:260px;">
+                                <canvas id="chartRanking"></canvas>
+                            </div>
                         </div></div>
                     </div>
                 </div>
@@ -183,7 +187,7 @@ new Chart(document.getElementById('chartTipos'), {
         labels: <?php echo json_encode($tiposLabels); ?>,
         datasets: [{ data: <?php echo json_encode($tiposData); ?>, backgroundColor: ['#0f3460','#1a6b8a','#e94560','#f5a623','#8e44ad'] }]
     },
-    options: { plugins: { legend: { position: 'bottom' } } }
+    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
 });
 new Chart(document.getElementById('chartRanking'), {
     type: 'bar',
@@ -191,7 +195,7 @@ new Chart(document.getElementById('chartRanking'), {
         labels: <?php echo json_encode($rankingLabels); ?>,
         datasets: [{ label: 'Incidencias', data: <?php echo json_encode($rankingData); ?>, backgroundColor: '#d92550' }]
     },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+    options: { maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
 });
 </script>
 </body>

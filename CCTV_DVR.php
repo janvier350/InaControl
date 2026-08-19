@@ -112,24 +112,38 @@ $rol_usuario = $_SESSION["rol"];
                                             <input type="text" class="form-control" name="numeroSerie">
                                         </div>
                                         <div class="col-md-3 mb-3">
+                                            <label class="form-label">Capacidad de disco</label>
+                                            <select class="form-select" name="capacidadDisco">
+                                                <option value="">Seleccione...</option>
+                                                <option value="500 GB">500 GB</option>
+                                                <option value="1 TB">1 TB</option>
+                                                <option value="2 TB">2 TB</option>
+                                                <option value="3 TB">3 TB</option>
+                                                <option value="4 TB">4 TB</option>
+                                                <option value="6 TB">6 TB</option>
+                                                <option value="8 TB">8 TB</option>
+                                                <option value="Sin disco">Sin disco</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
                                             <label class="form-label">Clave de acceso (equipo)</label>
                                             <input type="text" class="form-control" name="claveAcceso">
                                         </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-3 mb-3">
                                             <label class="form-label">Clave HikConnect</label>
                                             <input type="text" class="form-control" name="claveHikconnect">
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label class="form-label">Ubicación (rack, oficina, etc.)</label>
                                             <input type="text" class="form-control" name="ubicacion" placeholder="Rack Principal">
                                         </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label class="form-label">Fecha de compra</label>
                                             <input type="date" class="form-control" name="fechaCompra">
                                         </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-3 mb-3">
                                             <label class="form-label">Foto (que se aprecie ubicación y equipo)</label>
                                             <input type="file" class="form-control" name="foto" accept="image/*">
                                         </div>
@@ -162,7 +176,7 @@ $rol_usuario = $_SESSION["rol"];
                                         <thead>
                                             <tr>
                                                 <th>FOTO</th><th>TIPO</th><th>MARCA / MODELO</th><th>IP</th>
-                                                <th>CANALES</th><th>UBICACIÓN</th><th>SERIE</th><th>ESTADO</th><th>ACCIONES</th>
+                                                <th>CANALES</th><th>DISCO</th><th>UBICACIÓN</th><th>SERIE</th><th>ESTADO</th><th>ACCIONES</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -178,6 +192,7 @@ $rol_usuario = $_SESSION["rol"];
                                                 <td><strong><?php echo htmlspecialchars($d['MARCA']); ?></strong><br><small class="text-muted"><?php echo htmlspecialchars($d['MODELO']); ?></small></td>
                                                 <td><?php echo htmlspecialchars($d['IP'] ?: '-'); ?></td>
                                                 <td><?php echo htmlspecialchars($d['CANALES'] ?: '-'); ?></td>
+                                                <td><?php echo htmlspecialchars($d['CAPACIDAD_DISCO'] ?: '-'); ?></td>
                                                 <td><?php echo htmlspecialchars($d['UBICACION'] ?: '-'); ?></td>
                                                 <td class="small"><?php echo htmlspecialchars($d['NUMERO_SERIE'] ?: '-'); ?></td>
                                                 <td><span class="badge bg-success">Activo</span></td>
@@ -224,7 +239,23 @@ $rol_usuario = $_SESSION["rol"];
                     <div class="row">
                         <div class="col-md-3 mb-3"><label class="form-label">IP</label><input class="form-control" name="ip" id="editIp"></div>
                         <div class="col-md-3 mb-3"><label class="form-label">Serie</label><input class="form-control" name="numeroSerie" id="editNumeroSerie"></div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Capacidad de disco</label>
+                            <select class="form-select" name="capacidadDisco" id="editCapacidadDisco">
+                                <option value="">Seleccione...</option>
+                                <option value="500 GB">500 GB</option>
+                                <option value="1 TB">1 TB</option>
+                                <option value="2 TB">2 TB</option>
+                                <option value="3 TB">3 TB</option>
+                                <option value="4 TB">4 TB</option>
+                                <option value="6 TB">6 TB</option>
+                                <option value="8 TB">8 TB</option>
+                                <option value="Sin disco">Sin disco</option>
+                            </select>
+                        </div>
                         <div class="col-md-3 mb-3"><label class="form-label">Clave acceso</label><input class="form-control" name="claveAcceso" id="editClaveAcceso"></div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-3 mb-3"><label class="form-label">Clave HikConnect</label><input class="form-control" name="claveHikconnect" id="editClaveHikconnect"></div>
                     </div>
                     <div class="row">
@@ -260,6 +291,7 @@ function cargarDvr(d) {
     document.getElementById('editMarca').value = d.MARCA || '';
     document.getElementById('editModelo').value = d.MODELO || '';
     document.getElementById('editCanales').value = d.CANALES || '';
+    document.getElementById('editCapacidadDisco').value = d.CAPACIDAD_DISCO || '';
     document.getElementById('editIp').value = d.IP || '';
     document.getElementById('editNumeroSerie').value = d.NUMERO_SERIE || '';
     document.getElementById('editClaveAcceso').value = d.CLAVE_ACCESO || '';

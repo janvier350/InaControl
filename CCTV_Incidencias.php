@@ -91,7 +91,7 @@ $rol_usuario = $_SESSION["rol"];
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
-                                    <tr><th>FECHA</th><th>EQUIPO</th><th>TIPO</th><th>DESCRIPCIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr>
+                                    <tr><th>FECHA</th><th>EQUIPO</th><th>TIPO</th><th>DESCRIPCIÓN</th><th>EVIDENCIAS</th><th>ESTADO</th><th>ACCIONES</th></tr>
                                 </thead>
                                 <tbody>
                                 <?php if (mysqli_num_rows($q) === 0): ?>
@@ -111,6 +111,15 @@ $rol_usuario = $_SESSION["rol"];
                                         <td class="small"><?php echo htmlspecialchars($equipoLabel); ?></td>
                                         <td><span class="badge <?php echo $badgeTipo[$i['TIPO']] ?? 'bg-secondary'; ?>"><?php echo htmlspecialchars($i['TIPO']); ?></span></td>
                                         <td class="small"><?php echo htmlspecialchars($i['DESCRIPCION']); ?></td>
+                                        <td>
+                                            <?php
+                                            $evids = !empty($i['EVIDENCIAS']) ? explode(',', $i['EVIDENCIAS']) : [];
+                                            foreach ($evids as $ev): ?>
+                                                <img src="<?php echo htmlspecialchars($ev); ?>" style="width:34px;height:34px;object-fit:cover;border-radius:5px;cursor:pointer;margin-right:3px;"
+                                                     onclick="verImagenCctv('<?php echo htmlspecialchars($ev); ?>')">
+                                            <?php endforeach; ?>
+                                            <?php if (empty($evids)): echo '<span class="text-muted small">-</span>'; endif; ?>
+                                        </td>
                                         <td>
                                             <?php if ($i['ESTADO'] === 'Abierta'): ?>
                                                 <span class="badge bg-danger">Abierta</span>
@@ -146,7 +155,7 @@ $rol_usuario = $_SESSION["rol"];
         <div class="modal-content">
             <div class="modal-header"><h5 class="modal-title">Registrar Incidencia</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <form method="POST" action="class/Insert_Incidencia.php">
+                <form method="POST" action="class/Insert_Incidencia.php" enctype="multipart/form-data">
                     <div class="mb-2">
                         <label class="form-label">Equipo afectado</label>
                         <select class="form-select" name="equipo" id="selEquipoIncidencia" required>
@@ -188,6 +197,10 @@ $rol_usuario = $_SESSION["rol"];
                         <label class="form-label">Descripción</label>
                         <textarea class="form-control" name="descripcion" rows="3" required></textarea>
                     </div>
+                    <div class="mb-2">
+                        <label class="form-label">Evidencias (fotos del fallo)</label>
+                        <input type="file" class="form-control" name="evidencias[]" multiple accept="image/*">
+                    </div>
                     <div class="text-end"><button type="submit" class="btn btn-danger">Registrar</button></div>
                 </form>
             </div>
@@ -217,6 +230,16 @@ $rol_usuario = $_SESSION["rol"];
 <script>
 function cargarCierre(id) {
     document.getElementById('idIncidenciaCerrar').value = id;
+}
+function verImagenCctv(src) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:99999;cursor:zoom-out;align-items:center;justify-content:center;';
+    overlay.onclick = function() { overlay.remove(); };
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:80vw;max-width:900px;height:80vh;object-fit:contain;border-radius:6px;';
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
 }
 </script>
 </body>
