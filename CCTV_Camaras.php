@@ -147,6 +147,16 @@ $rol_usuario = $_SESSION["rol"];
                                         </div>
                                     </div>
                                     <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" role="switch" name="compartidaHikconnect" id="compartidaHikconnect" value="1">
+                                                <label class="form-check-label" for="compartidaHikconnect">
+                                                    <i class="bi bi-share-fill text-success"></i> Compartida vía HikConnect con proveedor de seguridad
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Foto (ubicación / estado de la cámara)</label>
                                             <input type="file" class="form-control" name="foto" accept="image/*">
@@ -227,7 +237,13 @@ $rol_usuario = $_SESSION["rol"];
                                                     <?php endif; ?>
                                                 </td>
                                                 <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($c['TIPO_CAMARA']); ?></span></td>
-                                                <td><strong><?php echo htmlspecialchars($c['MARCA']); ?></strong><br><small class="text-muted"><?php echo htmlspecialchars($c['MODELO']); ?></small></td>
+                                                <td>
+                                                    <strong><?php echo htmlspecialchars($c['MARCA']); ?></strong>
+                                                    <?php if (!empty($c['COMPARTIDA_HIKCONNECT'])): ?>
+                                                        <i class="bi bi-share-fill text-success" title="Compartida vía HikConnect con proveedor de seguridad"></i>
+                                                    <?php endif; ?>
+                                                    <br><small class="text-muted"><?php echo htmlspecialchars($c['MODELO']); ?></small>
+                                                </td>
                                                 <td><?php echo htmlspecialchars($c['IP'] ?: '-'); ?></td>
                                                 <td class="small"><?php echo htmlspecialchars($dvrLabel); ?></td>
                                                 <td><?php echo htmlspecialchars($c['UBICACION'] ?: '-'); ?></td>
@@ -299,12 +315,32 @@ $rol_usuario = $_SESSION["rol"];
                         <div class="col-md-4 mb-3"><label class="form-label">Fecha compra</label><input type="date" class="form-control" name="fechaCompra" id="editFechaCompraCam"></div>
                     </div>
                     <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" name="compartidaHikconnect" id="editCompartidaHikconnect" value="1">
+                                <label class="form-check-label" for="editCompartidaHikconnect">
+                                    <i class="bi bi-share-fill text-success"></i> Compartida vía HikConnect con proveedor de seguridad
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Nueva foto de ubicación (opcional)</label>
+                            <label class="form-label">Foto de ubicación</label>
+                            <div class="mb-2">
+                                <img id="editFotoPreview" src="" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;display:none;cursor:pointer;" onclick="verImagenCam(this.src)">
+                                <div id="editFotoVacio" class="text-muted small">Sin foto registrada.</div>
+                            </div>
+                            <label class="form-label">Reemplazar (opcional)</label>
                             <input type="file" class="form-control" name="foto" accept="image/*">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Nueva captura de vista (opcional)</label>
+                            <label class="form-label">Captura de vista</label>
+                            <div class="mb-2">
+                                <img id="editCapturaPreview" src="" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;display:none;cursor:pointer;" onclick="verImagenCam(this.src)">
+                                <div id="editCapturaVacio" class="text-muted small">Sin captura registrada.</div>
+                            </div>
+                            <label class="form-label">Reemplazar (opcional)</label>
                             <input type="file" class="form-control" name="capturaVista" accept="image/*">
                         </div>
                         <div class="col-md-4 mb-3"><label class="form-label">Observación</label><textarea class="form-control" name="observacion" id="editObservacionCam" rows="2"></textarea></div>
@@ -339,6 +375,17 @@ function cargarCamara(c) {
     document.getElementById('editFechaCompraCam').value = c.FECHA_COMPRA || '';
     document.getElementById('editObservacionCam').value = c.OBSERVACION || '';
     document.getElementById('editEstadoCam').value = c.ESTADO || 'A';
+    document.getElementById('editCompartidaHikconnect').checked = c.COMPARTIDA_HIKCONNECT == 1;
+
+    const fotoImg = document.getElementById('editFotoPreview');
+    const fotoVacio = document.getElementById('editFotoVacio');
+    if (c.FOTO) { fotoImg.src = c.FOTO; fotoImg.style.display = 'inline-block'; fotoVacio.style.display = 'none'; }
+    else { fotoImg.style.display = 'none'; fotoVacio.style.display = 'block'; }
+
+    const capturaImg = document.getElementById('editCapturaPreview');
+    const capturaVacio = document.getElementById('editCapturaVacio');
+    if (c.CAPTURA_VISTA) { capturaImg.src = c.CAPTURA_VISTA; capturaImg.style.display = 'inline-block'; capturaVacio.style.display = 'none'; }
+    else { capturaImg.style.display = 'none'; capturaVacio.style.display = 'block'; }
 }
 function filtrarCamaras() {
     const texto = document.getElementById('buscadorCam').value.toLowerCase();

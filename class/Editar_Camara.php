@@ -19,6 +19,7 @@ $fechaCompra      = trim($_POST['fechaCompra'] ?? '');
 $fechaCompraSql   = $fechaCompra !== '' ? "'" . mysqli_real_escape_string($conexion, $fechaCompra) . "'" : 'NULL';
 $observacion      = mysqli_real_escape_string($conexion, trim($_POST['observacion'] ?? ''));
 $estado           = ($_POST['estado'] ?? 'A') === 'I' ? 'I' : 'A';
+$compartida       = !empty($_POST['compartidaHikconnect']) ? 1 : 0;
 
 if (!$idCamara || !$marca) {
     echo "<script>alert('Datos incompletos.'); history.back();</script>";
@@ -60,6 +61,7 @@ if ($nuevaCaptura) {
 $sql = "UPDATE CCTV_CAMARA SET
     TIPO_CAMARA='$tipoCamara', MARCA='$marca', MODELO='$modelo', ID_DVR=$idDvr, IP='$ip',
     NUMERO_SERIE='$numeroSerie', USUARIO='$usuario', CLAVE='$clave', CLAVE_HIKCONNECT='$claveHikconnect',
+    COMPARTIDA_HIKCONNECT=$compartida,
     UBICACION='$ubicacion', FECHA_COMPRA=$fechaCompraSql, OBSERVACION='$observacion', ESTADO='$estado' $fotoSql $capturaVistaSql
     WHERE ID_CAMARA = $idCamara";
 

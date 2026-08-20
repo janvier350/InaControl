@@ -17,6 +17,7 @@ $ubicacion        = mysqli_real_escape_string($conexion, trim($_POST['ubicacion'
 $fechaCompra      = trim($_POST['fechaCompra'] ?? '');
 $fechaCompraSql   = $fechaCompra !== '' ? "'" . mysqli_real_escape_string($conexion, $fechaCompra) . "'" : 'NULL';
 $observacion      = mysqli_real_escape_string($conexion, trim($_POST['observacion'] ?? ''));
+$compartida       = !empty($_POST['compartidaHikconnect']) ? 1 : 0;
 
 if (!$marca) {
     echo "<script>alert('La marca es obligatoria.'); history.back();</script>";
@@ -47,8 +48,8 @@ $foto = subirImagenCamara('foto');
 $capturaVista = subirImagenCamara('capturaVista');
 
 $sql = "INSERT INTO CCTV_CAMARA
-    (ID_DVR, MARCA, MODELO, IP, NUMERO_SERIE, USUARIO, CLAVE, CLAVE_HIKCONNECT, TIPO_CAMARA, UBICACION, FECHA_COMPRA, OBSERVACION, FOTO, CAPTURA_VISTA, ESTADO)
-    VALUES ($idDvr, '$marca', '$modelo', '$ip', '$numeroSerie', '$usuario', '$clave', '$claveHikconnect', '$tipoCamara', '$ubicacion', $fechaCompraSql, '$observacion', '$foto', '$capturaVista', 'A')";
+    (ID_DVR, MARCA, MODELO, IP, NUMERO_SERIE, USUARIO, CLAVE, CLAVE_HIKCONNECT, COMPARTIDA_HIKCONNECT, TIPO_CAMARA, UBICACION, FECHA_COMPRA, OBSERVACION, FOTO, CAPTURA_VISTA, ESTADO)
+    VALUES ($idDvr, '$marca', '$modelo', '$ip', '$numeroSerie', '$usuario', '$clave', '$claveHikconnect', $compartida, '$tipoCamara', '$ubicacion', $fechaCompraSql, '$observacion', '$foto', '$capturaVista', 'A')";
 
 if ($conexion->query($sql) === TRUE) {
     echo "<script>alert('Cámara registrada correctamente.'); window.location.href = '../CCTV_Camaras.php';</script>";
