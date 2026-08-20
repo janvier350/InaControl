@@ -119,6 +119,9 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                         <div>
                                             <div class="small fw-bold"><?php echo htmlspecialchars($cam['MARCA'].' '.$cam['MODELO']); ?>
                                                 <span class="badge bg-light text-dark border"><?php echo htmlspecialchars($cam['TIPO_CAMARA']); ?></span>
+                                                <?php if (!empty($cam['COMPARTIDA_HIKCONNECT'])): ?>
+                                                    <i class="bi bi-share-fill text-success" title="Compartida vía HikConnect con proveedor de seguridad"></i>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="small text-muted"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($cam['UBICACION'] ?: 'Sin ubicación'); ?></div>
                                         </div>
@@ -145,6 +148,9 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                         <div>
                                             <div class="small fw-bold"><?php echo htmlspecialchars($cam['MARCA'].' '.$cam['MODELO']); ?>
                                                 <span class="badge bg-light text-dark border"><?php echo htmlspecialchars($cam['TIPO_CAMARA']); ?></span>
+                                                <?php if (!empty($cam['COMPARTIDA_HIKCONNECT'])): ?>
+                                                    <i class="bi bi-share-fill text-success" title="Compartida vía HikConnect con proveedor de seguridad"></i>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="small text-muted"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($cam['UBICACION'] ?: 'Sin ubicación'); ?></div>
                                         </div>
