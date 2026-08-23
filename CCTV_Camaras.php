@@ -19,6 +19,19 @@ if(!isset($_SESSION["rol"])){
     }
 }
 $rol_usuario = $_SESSION["rol"];
+
+$elaboradoPor = $_SESSION["username"];
+if (!empty($_SESSION['iduser'])) {
+    $stmtU = $conexion->prepare("SELECT NOMBRES, APELLIDOS FROM ADM_USUARIO WHERE IDADM_USUARIO = ?");
+    $stmtU->bind_param("i", $_SESSION['iduser']);
+    $stmtU->execute();
+    $rowU = $stmtU->get_result()->fetch_assoc();
+    $stmtU->close();
+    if ($rowU) {
+        $elaboradoPor = trim($rowU['NOMBRES'] . ' ' . $rowU['APELLIDOS']);
+    }
+}
+$totalCamarasActivas = (int) mysqli_fetch_row($conexion->query("SELECT COUNT(*) FROM CCTV_CAMARA WHERE ESTADO = 'A'"))[0];
 ?>
 <head>
     <meta charset="utf-8">
@@ -226,8 +239,29 @@ $rol_usuario = $_SESSION["rol"];
                                     </div>
                                 </div>
                                 <div class="print-header mb-3" style="display:none;">
-                                    <h4>Reporte de Cámaras CCTV</h4>
-                                    <p>Generado: <?php echo date('d/m/Y H:i'); ?></p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2" style="border-bottom:3px solid #0f3460; padding-bottom:8px;">
+                                        <div>
+                                            <h4 class="mb-0">INASAR</h4>
+                                            <small class="text-muted">Reporte de Cámaras de Video Vigilancia (CCTV)</small>
+                                        </div>
+                                        <div class="text-end small">
+                                            <strong>Fecha de emisión:</strong> <?php echo date('d/m/Y H:i'); ?>
+                                        </div>
+                                    </div>
+                                    <table style="width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:10px;">
+                                        <tr>
+                                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold; width:20%;">Elaborado por:</td>
+                                            <td style="border:1px solid #000; padding:4px 8px; width:30%;"><?php echo htmlspecialchars($elaboradoPor); ?></td>
+                                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold; width:20%;">Total de cámaras:</td>
+                                            <td style="border:1px solid #000; padding:4px 8px; width:30%;"><?php echo $totalCamarasActivas; ?> activas</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold;">Departamento:</td>
+                                            <td style="border:1px solid #000; padding:4px 8px;">Sistemas / Soporte Técnico</td>
+                                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold;">Documento:</td>
+                                            <td style="border:1px solid #000; padding:4px 8px;">Inventario CCTV</td>
+                                        </tr>
+                                    </table>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-hover" id="tablaCamaras">
@@ -246,7 +280,7 @@ $rol_usuario = $_SESSION["rol"];
                                              WHERE C.ESTADO = 'A' ORDER BY C.UBICACION, C.MARCA"
                                         );
                                         while ($c = mysqli_fetch_assoc($q)):
-                                            $foto = !empty($c['FOTO']) ? $c['FOTO'] : 'https://mdbootstrap.com/img/new/avatars/8.jpg';
+                                            $foto = !empty($c['FOTO']) ? $c['FOTO'] : 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23e9ecef%22/%3E%3Crect%20x%3D%2210%22%20y%3D%2222%22%20width%3D%2234%22%20height%3D%2224%22%20rx%3D%224%22%20fill%3D%22none%22%20stroke%3D%22%236c757d%22%20stroke-width%3D%223%22/%3E%3Cpath%20d%3D%22M20%2022l4-6h8l4%206%22%20fill%3D%22none%22%20stroke%3D%22%236c757d%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2227%22%20cy%3D%2234%22%20r%3D%227%22%20fill%3D%22none%22%20stroke%3D%22%236c757d%22%20stroke-width%3D%223%22/%3E%3Cpath%20d%3D%22M44%2028l10-5v18l-10-5z%22%20fill%3D%22%236c757d%22/%3E%3C/svg%3E';
                                             $dvrLabel = $c['ID_DVR'] ? trim($c['DVR_TIPO'].' '.$c['DVR_MARCA'].' ('.$c['DVR_UBICACION'].')') : 'Independiente';
                                             $filtro = strtolower($c['MARCA'].' '.$c['MODELO'].' '.$c['IP'].' '.$c['UBICACION']);
                                         ?>

@@ -9,12 +9,25 @@ if (!isset($_SESSION["rol"])) {
     exit();
 }
 
+$elaboradoPor = $_SESSION["username"];
+if (!empty($_SESSION['iduser'])) {
+    $stmtU = $conexion->prepare("SELECT NOMBRES, APELLIDOS FROM ADM_USUARIO WHERE IDADM_USUARIO = ?");
+    $stmtU->bind_param("i", $_SESSION['iduser']);
+    $stmtU->execute();
+    $rowU = $stmtU->get_result()->fetch_assoc();
+    $stmtU->close();
+    if ($rowU) {
+        $elaboradoPor = trim($rowU['NOMBRES'] . ' ' . $rowU['APELLIDOS']);
+    }
+}
+
 $sql = "SELECT C.*, D.TIPO AS DVR_TIPO, D.MARCA AS DVR_MARCA, D.MODELO AS DVR_MODELO, D.UBICACION AS DVR_UBICACION
         FROM CCTV_CAMARA C
         LEFT JOIN CCTV_DVR D ON C.ID_DVR = D.ID_DVR
         WHERE C.ESTADO = 'A'
         ORDER BY C.UBICACION, C.MARCA";
 $resultados = $conexion->query($sql);
+$totalCamarasActivas = (int) mysqli_fetch_row($conexion->query("SELECT COUNT(*) FROM CCTV_CAMARA WHERE ESTADO = 'A'"))[0];
 
 $nombreArchivo = 'reporte_camaras_' . date('Y-m-d') . '.csv';
 
@@ -24,6 +37,16 @@ header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
 echo chr(0xEF) . chr(0xBB) . chr(0xBF); // BOM para Excel
 
 $out = fopen('php://output', 'w');
+
+// Encabezado profesional del informe
+fputcsv($out, ['INASAR'], ';');
+fputcsv($out, ['Reporte de Cámaras de Video Vigilancia (CCTV)'], ';');
+fputcsv($out, ['Elaborado por:', $elaboradoPor], ';');
+fputcsv($out, ['Fecha de emisión:', date('d/m/Y H:i')], ';');
+fputcsv($out, ['Departamento:', 'Sistemas / Soporte Técnico'], ';');
+fputcsv($out, ['Total de cámaras activas:', $totalCamarasActivas], ';');
+fputcsv($out, [], ';');
+
 fputcsv($out, [
     'Tipo', 'Marca', 'Modelo', 'IP', 'Número de Serie', 'Usuario',
     'DVR / NVR', 'Ubicación DVR', 'Compartida HikConnect', 'Ubicación / Área',
