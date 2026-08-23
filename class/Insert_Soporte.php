@@ -125,6 +125,23 @@ if (!empty($_FILES['evidencias']) && is_array($_FILES['evidencias']['name'])) {
     }
 }
 
+// Separar evidencias en "para adjuntar" vs "enlace" según un presupuesto de tamaño total,
+// para no exceder el límite de envío del servidor de correo (~22 MB).
+$PRESUPUESTO_ADJUNTOS = 15 * 1024 * 1024; // 15 MB para adjuntos, deja margen para el resto del correo
+$archivosAdjuntar = [];
+$archivosLink = [];
+$pesoAcumulado = 0;
+foreach ($rutasEvidencias as $rutaEvidencia) {
+    $rutaAbsoluta = __DIR__ . '/../' . $rutaEvidencia;
+    $peso = file_exists($rutaAbsoluta) ? filesize($rutaAbsoluta) : 0;
+    if ($pesoAcumulado + $peso <= $PRESUPUESTO_ADJUNTOS) {
+        $archivosAdjuntar[] = $rutaEvidencia;
+        $pesoAcumulado += $peso;
+    } else {
+        $archivosLink[] = $rutaEvidencia;
+    }
+}
+
 // Obtener nombre + correo del cliente
 $stmt_cli = $conexion->prepare(
     "SELECT NOMBRES, APELLIDOS, EMAIL FROM AG_PACIENTE WHERE IDPACIENTE = ? LIMIT 1"
@@ -225,16 +242,32 @@ $htmlBody = "
           </td>
         </tr>" : "") . "
 
-        " . (!empty($rutasEvidencias) ? "
+        " . (!empty($archivosAdjuntar) ? "
         <!-- Evidencias adjuntas -->
         <tr>
           <td style='padding:4px 32px 16px;'>
             <p style='font-size:13px;font-weight:bold;color:#1a3a5c;margin:0 0 6px;'>
-              📷 Evidencias adjuntas: " . count($rutasEvidencias) . "
+              📷 Evidencias adjuntas: " . count($archivosAdjuntar) . "
             </p>
             <p style='font-size:13px;color:#777;margin:0;'>
               Se incluyen como archivos adjuntos en este correo.
             </p>
+          </td>
+        </tr>" : "") . "
+
+        " . (!empty($archivosLink) ? "
+        <!-- Evidencias por enlace (archivos pesados) -->
+        <tr>
+          <td style='padding:4px 32px 16px;'>
+            <p style='font-size:13px;font-weight:bold;color:#1a3a5c;margin:0 0 6px;'>
+              🔗 Evidencias adicionales (por tamaño, disponibles en línea):
+            </p>
+            <ul style='font-size:13px;color:#1a5fb4;margin:0;padding-left:18px;'>" .
+              implode('', array_map(function($ruta) {
+                  $url = 'https://overclocking.com.ec/InaControl/' . $ruta;
+                  return "<li style='margin-bottom:4px;'><a href='$url' style='color:#1a5fb4;'>" . basename($ruta) . "</a></li>";
+              }, $archivosLink)) . "
+            </ul>
           </td>
         </tr>" : "") . "
 
@@ -272,7 +305,10 @@ $textBody = "Estimado/a $nombreCliente,\n\n"
           . "Tipo: $tipoSoporteTexto\n"
           . "Técnico: $nombreTecnico\n"
           . ($comentarioRaw ? "\nActividades:\n$comentarioRaw\n" : "")
-          . (!empty($rutasEvidencias) ? "\nSe adjuntan " . count($rutasEvidencias) . " archivo(s) de evidencia.\n" : "")
+          . (!empty($archivosAdjuntar) ? "\nSe adjuntan " . count($archivosAdjuntar) . " archivo(s) de evidencia.\n" : "")
+          . (!empty($archivosLink) ? "\nEvidencias adicionales por tamaño (enlaces):\n" . implode("\n", array_map(function($r) {
+                return 'https://overclocking.com.ec/InaControl/' . $r;
+            }, $archivosLink)) . "\n" : "")
           . "\nAtentamente,\nEquipo de Soporte Técnico — Overclocking";
 
 // ── Enviar correo ────────────────────────────────────────────────────
@@ -314,7 +350,7 @@ try {
     $mail->Body    = $htmlBody;
     $mail->AltBody = $textBody;
 
-    foreach ($rutasEvidencias as $rutaEvidencia) {
+    foreach ($archivosAdjuntar as $rutaEvidencia) {
         $mail->addAttachment(__DIR__ . '/../' . $rutaEvidencia);
     }
 
