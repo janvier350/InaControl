@@ -51,7 +51,7 @@ foreach ($evidenciasActuales as $ruta) {
 
 // Nuevas imágenes subidas
 if (!empty($_FILES['evidenciasNuevas']) && is_array($_FILES['evidenciasNuevas']['name'])) {
-    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'xls', 'xlsx'];
     $totalArchivos = count($_FILES['evidenciasNuevas']['name']);
 
     for ($i = 0; $i < $totalArchivos; $i++) {

@@ -627,8 +627,8 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
 
                     <div class="mb-3">
                         <label class="form-label">Evidencias del soporte (imágenes)</label>
-                        <input type="file" class="form-control" name="evidencias[]" id="evidencias" multiple accept="image/*">
-                        <div class="form-text">Estas imágenes se enviarán por correo al cliente junto con los datos del soporte.</div>
+                        <input type="file" class="form-control" name="evidencias[]" id="evidencias" multiple accept="image/*,.pdf,.xls,.xlsx">
+                        <div class="form-text">Puedes adjuntar imágenes, PDF o Excel. Se enviarán por correo al cliente junto con los datos del soporte.</div>
                     </div>
 
                     <div class="text-end">
@@ -795,7 +795,7 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Agregar nuevas evidencias</label>
-                            <input type="file" class="form-control" id="editEvidenciasNuevas" multiple accept="image/*">
+                            <input type="file" class="form-control" id="editEvidenciasNuevas" multiple accept="image/*,.pdf,.xls,.xlsx">
                         </div>
                     </div>
 
@@ -925,7 +925,15 @@ function renderEvidenciasEdicion() {
     vacio.style.display = 'none';
     cont.innerHTML = visibles.map(src => `
         <div style="position:relative;">
-            <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">
+            ${esImagen(src) ? `
+                <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">
+            ` : `
+                <a href="${src}" target="_blank" rel="noopener"
+                   style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:80px; height:80px; border-radius:6px; border:1px solid #dee2e6; background:#f8f9fa; text-decoration:none; color:#495057;">
+                    <i class="${iconoArchivo(src)}" style="font-size:1.6rem;"></i>
+                    <span style="font-size:0.65rem; margin-top:4px;">${extensionArchivo(src)}</span>
+                </a>
+            `}
             <button type="button" onclick="quitarEvidenciaEdicion('${src}')"
                 style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;
                        background:#dc3545;color:#fff;border:none;line-height:1;font-size:.85rem;">&times;</button>
@@ -1038,10 +1046,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="mt-2">
                     <strong><i class="bi bi-camera"></i> Evidencias:</strong>
                     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
-                        ${evidencias.map(src => `
+                        ${evidencias.map(src => esImagen(src) ? `
                             <img src="${src}" alt="Evidencia" loading="lazy"
                                  style="width:80px; height:80px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid #dee2e6;"
                                  onclick="verImagenEvidencia('${src}')">
+                        ` : `
+                            <a href="${src}" target="_blank" rel="noopener"
+                               style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:80px; height:80px; border-radius:6px; border:1px solid #dee2e6; background:#f8f9fa; text-decoration:none; color:#495057;">
+                                <i class="${iconoArchivo(src)}" style="font-size:1.6rem;"></i>
+                                <span style="font-size:0.65rem; margin-top:4px;">${extensionArchivo(src)}</span>
+                            </a>
                         `).join('')}
                     </div>
                 </div>` : '';
@@ -1100,6 +1114,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     calendar.render();
 });
+
+function extensionArchivo(src) {
+    return (src.split('.').pop() || '').toUpperCase().substring(0, 4);
+}
+function esImagen(src) {
+    return ['jpg','jpeg','png','gif','webp'].indexOf(extensionArchivo(src).toLowerCase()) !== -1;
+}
+function iconoArchivo(src) {
+    const ext = extensionArchivo(src).toLowerCase();
+    if (ext === 'pdf') return 'bi bi-file-earmark-pdf text-danger';
+    if (ext === 'xls' || ext === 'xlsx') return 'bi bi-file-earmark-excel text-success';
+    return 'bi bi-file-earmark text-secondary';
+}
 
 function verImagenEvidencia(src) {
     var overlay = document.createElement('div');

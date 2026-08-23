@@ -95,7 +95,7 @@ $stmt_insert->close();
 $idCalendario = $conexion->insert_id;
 $rutasEvidencias = [];
 if (!empty($_FILES['evidencias']) && is_array($_FILES['evidencias']['name'])) {
-    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'xls', 'xlsx'];
     $totalArchivos = count($_FILES['evidencias']['name']);
 
     for ($i = 0; $i < $totalArchivos; $i++) {
@@ -272,7 +272,7 @@ $textBody = "Estimado/a $nombreCliente,\n\n"
           . "Tipo: $tipoSoporteTexto\n"
           . "Técnico: $nombreTecnico\n"
           . ($comentarioRaw ? "\nActividades:\n$comentarioRaw\n" : "")
-          . (!empty($rutasEvidencias) ? "\nSe adjuntan " . count($rutasEvidencias) . " imagen(es) de evidencia.\n" : "")
+          . (!empty($rutasEvidencias) ? "\nSe adjuntan " . count($rutasEvidencias) . " archivo(s) de evidencia.\n" : "")
           . "\nAtentamente,\nEquipo de Soporte Técnico — Overclocking";
 
 // ── Enviar correo ────────────────────────────────────────────────────
