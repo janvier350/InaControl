@@ -28,6 +28,15 @@ $rol_usuario = $_SESSION["rol"];
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="./main.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print, .app-sidebar, .app-header, .nav-tabs, .app-page-title, #tab-registrar, th.no-print, td.no-print { display: none !important; }
+            #tab-listado { display: block !important; opacity: 1 !important; }
+            .app-main__outer { padding-left: 0 !important; }
+            .print-header { display: block !important; }
+            body { background: #fff !important; }
+        }
+    </style>
 </head>
 <body>
 <div class="app-container app-theme-white body-tabs-shadow fixed-sidebar fixed-header">
@@ -182,7 +191,7 @@ $rol_usuario = $_SESSION["rol"];
                     <div class="tab-pane fade" id="tab-listado">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
-                                <div class="row g-2 mb-3">
+                                <div class="row g-2 mb-3 no-print">
                                     <div class="col-md-4">
                                         <input type="text" id="buscadorCam" class="form-control" placeholder="Buscar por marca, IP o ubicación..." onkeyup="filtrarCamaras()">
                                     </div>
@@ -207,13 +216,25 @@ $rol_usuario = $_SESSION["rol"];
                                             <option value="Bullet">Bullet</option>
                                         </select>
                                     </div>
+                                    <div class="col-md-2 d-flex gap-1">
+                                        <a class="btn btn-success flex-fill" href="class/CCTV_Export_Camaras.php" title="Exportar Excel">
+                                            <i class="bi bi-file-earmark-excel"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger flex-fill" onclick="window.print()" title="Exportar PDF">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="print-header mb-3" style="display:none;">
+                                    <h4>Reporte de Cámaras CCTV</h4>
+                                    <p>Generado: <?php echo date('d/m/Y H:i'); ?></p>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-hover" id="tablaCamaras">
                                         <thead>
                                             <tr>
                                                 <th>FOTO</th><th>TIPO</th><th>MARCA / MODELO</th><th>IP</th>
-                                                <th>DVR/NVR</th><th>UBICACIÓN</th><th>ESTADO</th><th>ACCIONES</th>
+                                                <th>DVR/NVR</th><th>UBICACIÓN</th><th>ESTADO</th><th class="no-print">ACCIONES</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -248,7 +269,7 @@ $rol_usuario = $_SESSION["rol"];
                                                 <td class="small"><?php echo htmlspecialchars($dvrLabel); ?></td>
                                                 <td><?php echo htmlspecialchars($c['UBICACION'] ?: '-'); ?></td>
                                                 <td><span class="badge bg-success">Activa</span></td>
-                                                <td>
+                                                <td class="no-print">
                                                     <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditarCam"
                                                         onclick='cargarCamara(<?php echo json_encode($c, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
                                                         <i class="bi bi-pencil"></i>
