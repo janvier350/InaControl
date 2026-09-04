@@ -155,31 +155,31 @@ $rol_usuario = $_SESSION["rol"];
         <div class="modal-content">
             <div class="modal-header"><h5 class="modal-title">Registrar Incidencia</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <form method="POST" action="class/Insert_Incidencia.php" enctype="multipart/form-data">
-                    <div class="mb-2">
+                <form method="POST" action="class/Insert_Incidencia.php" enctype="multipart/form-data" onsubmit="return validarEquipoIncidencia();">
+                    <div class="mb-2 position-relative">
                         <label class="form-label">Equipo afectado</label>
-                        <select class="form-select" name="equipo" id="selEquipoIncidencia" required>
-                            <option value="">Seleccione...</option>
-                            <optgroup label="Cámaras">
-                                <?php
-                                $qc = $conexion->query("SELECT ID_CAMARA, MARCA, MODELO, UBICACION FROM CCTV_CAMARA WHERE ESTADO = 'A' ORDER BY UBICACION, MARCA");
-                                while ($cam = mysqli_fetch_assoc($qc)) {
-                                    $label = trim($cam['MARCA'].' '.$cam['MODELO']).' ('.$cam['UBICACION'].')';
-                                    echo '<option value="camara-'.$cam['ID_CAMARA'].'">'.htmlspecialchars($label).'</option>';
-                                }
-                                ?>
-                            </optgroup>
-                            <optgroup label="DVR / NVR">
-                                <?php
-                                $qd = $conexion->query("SELECT ID_DVR, TIPO, MARCA, MODELO, UBICACION FROM CCTV_DVR WHERE ESTADO = 'A' ORDER BY UBICACION, MARCA");
-                                while ($dv = mysqli_fetch_assoc($qd)) {
-                                    $label = $dv['TIPO'].': '.trim($dv['MARCA'].' '.$dv['MODELO']).' ('.$dv['UBICACION'].')';
-                                    echo '<option value="dvr-'.$dv['ID_DVR'].'">'.htmlspecialchars($label).'</option>';
-                                }
-                                ?>
-                            </optgroup>
-                        </select>
+                        <input type="text" class="form-control" id="buscarEquipoIncidencia" placeholder="Escriba para buscar cámara o DVR..." autocomplete="off" required>
+                        <input type="hidden" name="equipo" id="selEquipoIncidencia">
+                        <div id="listaEquiposIncidencia" class="list-group shadow-sm" style="display:none; position:absolute; z-index:1060; width:100%; max-height:220px; overflow-y:auto;"></div>
                     </div>
+                    <?php
+                        $opcionesEquipo = [];
+                        $qc = $conexion->query("SELECT ID_CAMARA, MARCA, MODELO, UBICACION FROM CCTV_CAMARA WHERE ESTADO = 'A' ORDER BY UBICACION, MARCA");
+                        while ($cam = mysqli_fetch_assoc($qc)) {
+                            $opcionesEquipo[] = [
+                                'value' => 'camara-' . $cam['ID_CAMARA'],
+                                'label' => 'Cámara: ' . trim($cam['MARCA'] . ' ' . $cam['MODELO']) . ' (' . $cam['UBICACION'] . ')',
+                            ];
+                        }
+                        $qd = $conexion->query("SELECT ID_DVR, TIPO, MARCA, MODELO, UBICACION FROM CCTV_DVR WHERE ESTADO = 'A' ORDER BY UBICACION, MARCA");
+                        while ($dv = mysqli_fetch_assoc($qd)) {
+                            $opcionesEquipo[] = [
+                                'value' => 'dvr-' . $dv['ID_DVR'],
+                                'label' => $dv['TIPO'] . ': ' . trim($dv['MARCA'] . ' ' . $dv['MODELO']) . ' (' . $dv['UBICACION'] . ')',
+                            ];
+                        }
+                    ?>
+                    <script>var opcionesEquipoIncidencia = <?php echo json_encode($opcionesEquipo, JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
                     <div class="mb-2">
                         <label class="form-label">Tipo</label>
                         <select class="form-select" name="tipo" required>
@@ -228,6 +228,58 @@ $rol_usuario = $_SESSION["rol"];
 </div>
 
 <script>
+(function() {
+    var input = document.getElementById('buscarEquipoIncidencia');
+    var hidden = document.getElementById('selEquipoIncidencia');
+    var lista = document.getElementById('listaEquiposIncidencia');
+    if (!input) return;
+
+    function renderResultados(texto) {
+        var t = texto.trim().toLowerCase();
+        var resultados = !t ? opcionesEquipoIncidencia.slice(0, 20)
+            : opcionesEquipoIncidencia.filter(function(o) { return o.label.toLowerCase().indexOf(t) !== -1; }).slice(0, 20);
+
+        if (!resultados.length) {
+            lista.innerHTML = '<div class="list-group-item text-muted small">Sin resultados.</div>';
+        } else {
+            lista.innerHTML = resultados.map(function(o) {
+                return '<button type="button" class="list-group-item list-group-item-action" data-value="' + o.value + '">' + o.label + '</button>';
+            }).join('');
+        }
+        lista.style.display = 'block';
+    }
+
+    input.addEventListener('focus', function() { renderResultados(input.value); });
+    input.addEventListener('input', function() {
+        hidden.value = '';
+        renderResultados(input.value);
+    });
+
+    lista.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-value]');
+        if (!btn) return;
+        hidden.value = btn.dataset.value;
+        input.value = btn.textContent;
+        lista.style.display = 'none';
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target !== input && !lista.contains(e.target)) {
+            lista.style.display = 'none';
+        }
+    });
+})();
+
+function validarEquipoIncidencia() {
+    var hidden = document.getElementById('selEquipoIncidencia');
+    if (!hidden.value) {
+        alert('Seleccione un equipo de la lista de resultados.');
+        document.getElementById('buscarEquipoIncidencia').focus();
+        return false;
+    }
+    return true;
+}
+
 function cargarCierre(id) {
     document.getElementById('idIncidenciaCerrar').value = id;
 }
