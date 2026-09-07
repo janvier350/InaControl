@@ -135,6 +135,12 @@ $rol_usuario = $_SESSION["rol"];
                                             </button>
                                             <?php else: ?>
                                                 <span class="small text-muted"><?php echo htmlspecialchars($i['SOLUCION']); ?></span>
+                                                <?php
+                                                $evidsSol = !empty($i['EVIDENCIAS_SOLUCION']) ? explode(',', $i['EVIDENCIAS_SOLUCION']) : [];
+                                                foreach ($evidsSol as $ev): ?>
+                                                    <img src="<?php echo htmlspecialchars($ev); ?>" title="Evidencia de solución" style="width:30px;height:30px;object-fit:cover;border-radius:5px;cursor:pointer;margin-left:3px;"
+                                                         onclick="verImagenCctv('<?php echo htmlspecialchars($ev); ?>')">
+                                                <?php endforeach; ?>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -214,11 +220,15 @@ $rol_usuario = $_SESSION["rol"];
         <div class="modal-content">
             <div class="modal-header"><h5 class="modal-title">Resolver Incidencia</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <form method="POST" action="class/Cerrar_Incidencia.php">
+                <form method="POST" action="class/Cerrar_Incidencia.php" enctype="multipart/form-data">
                     <input type="hidden" name="idIncidencia" id="idIncidenciaCerrar">
                     <div class="mb-2">
                         <label class="form-label">Solución aplicada</label>
                         <textarea class="form-control" name="solucion" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Evidencia de la solución (foto de la cámara ya funcionando)</label>
+                        <input type="file" class="form-control" name="evidenciasSolucion[]" multiple accept="image/*">
                     </div>
                     <div class="text-end"><button type="submit" class="btn btn-success">Marcar como Resuelta</button></div>
                 </form>
