@@ -58,16 +58,9 @@
                                 Crear Paciente
                             </a>
                         </li>
-                        <!--  <li>
-                            <a href="#">
-                              <i class="metismenu-icon">
-                                </i>Listado
-                            </a>
-                        </li>
-                         -->
-                        
                     </ul>
-                    <li>
+                </li>
+                <li>
                     <a href="#">
                         <i class="metismenu-icon pe-7s-users"></i>
                         Doctor
@@ -85,7 +78,7 @@
                                 <i class="metismenu-icon">
                                 </i>Cotizador
                             </a>
-                        </li> -->
+                        </li>
                     </ul>
                 </li>
                 <li>
@@ -101,14 +94,7 @@
                                 </i>Crear Nuevo CIE-10
                             </a>
                         </li>
-                       <!-- <li>
-                            <a href="PNC_DoctorListado.php">
-                                <i class="metismenu-icon">
-                                </i>Listado
-                            </a>
-                        </li> -->
                     </ul>
-                </li>
                 </li>
                 <li class="app-sidebar__heading">Agenda</li>
                 <li>
