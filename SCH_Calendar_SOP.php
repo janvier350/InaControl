@@ -671,7 +671,7 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                 <div class="tab-content pt-3">
                     <!-- Registrar salida -->
                     <div class="tab-pane fade show active" id="tab-salida" role="tabpanel">
-                        <form method="POST" action="class/Insert_Mantenimiento.php">
+                        <form method="POST" action="class/Insert_Mantenimiento.php" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label class="form-label">Equipo</label>
                                 <select class="form-select" name="idEquipo" required>
@@ -692,6 +692,10 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                                 <label class="form-label">Daño / problema que presenta</label>
                                 <textarea class="form-control" name="danioReportado" rows="3" maxlength="500" required></textarea>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Evidencias (fotos del daño)</label>
+                                <input type="file" class="form-control" name="evidenciasSalida[]" multiple accept="image/*">
+                            </div>
                             <div class="text-end">
                                 <button type="submit" class="btn btn-warning">Registrar Salida</button>
                             </div>
@@ -699,7 +703,7 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                     </div>
                     <!-- Registrar entrega -->
                     <div class="tab-pane fade" id="tab-entrega" role="tabpanel">
-                        <form method="POST" action="class/Cerrar_Mantenimiento.php">
+                        <form method="POST" action="class/Cerrar_Mantenimiento.php" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label class="form-label">Mantenimiento en curso</label>
                                 <select class="form-select" name="idMantenimiento" required>
@@ -719,6 +723,10 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                             <div class="mb-3">
                                 <label class="form-label">Detalle de la solución aplicada</label>
                                 <textarea class="form-control" name="solucionAplicada" rows="3" maxlength="500" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Evidencias (foto del equipo ya funcionando)</label>
+                                <input type="file" class="form-control" name="evidenciasEntrega[]" multiple accept="image/*">
                             </div>
                             <div class="text-end">
                                 <button type="submit" class="btn btn-success">Registrar Entrega</button>

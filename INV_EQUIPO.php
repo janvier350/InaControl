@@ -566,12 +566,13 @@ $rol_usuario = $_SESSION["rol"];
                                                     <th>DAÑO REPORTADO</th>
                                                     <th>FECHA ENTREGA</th>
                                                     <th>SOLUCIÓN APLICADA</th>
+                                                    <th>EVIDENCIAS</th>
                                                     <th>ESTADO</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php
-                                                $sqlMant = "SELECT M.FECHA_SALIDA, M.DANIO_REPORTADO, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.ESTADO,
+                                                $sqlMant = "SELECT M.FECHA_SALIDA, M.DANIO_REPORTADO, M.EVIDENCIAS_SALIDA, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.EVIDENCIAS_ENTREGA, M.ESTADO,
                                                                    E.MARCA, E.MODELO, E.SERIAL
                                                             FROM INV_MANTENIMIENTOS M
                                                             INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO
@@ -588,6 +589,17 @@ $rol_usuario = $_SESSION["rol"];
                                                     <td><?php echo htmlspecialchars($mant['DANIO_REPORTADO']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['FECHA_ENTREGA'] ?? '-'); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['SOLUCION_APLICADA'] ?? '-'); ?></td>
+                                                    <td>
+                                                        <?php
+                                                        $evidsMant = [];
+                                                        if (!empty($mant['EVIDENCIAS_SALIDA'])) { $evidsMant = array_merge($evidsMant, explode(',', $mant['EVIDENCIAS_SALIDA'])); }
+                                                        if (!empty($mant['EVIDENCIAS_ENTREGA'])) { $evidsMant = array_merge($evidsMant, explode(',', $mant['EVIDENCIAS_ENTREGA'])); }
+                                                        foreach ($evidsMant as $evMant): ?>
+                                                            <img src="<?php echo htmlspecialchars($evMant); ?>" style="width:34px;height:34px;object-fit:cover;border-radius:5px;cursor:pointer;margin-right:3px;"
+                                                                 onclick="verImagenEquipo('<?php echo htmlspecialchars($evMant); ?>')">
+                                                        <?php endforeach; ?>
+                                                        <?php if (empty($evidsMant)): echo '<span class="text-muted small">-</span>'; endif; ?>
+                                                    </td>
                                                     <td>
                                                         <?php if ($mant['ESTADO'] === 'En Reparacion') { ?>
                                                             <span class="badge bg-warning text-dark">En Reparación</span>
