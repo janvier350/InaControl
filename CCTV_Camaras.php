@@ -267,8 +267,14 @@ $totalCamarasActivas = (int) mysqli_fetch_row($conexion->query("SELECT COUNT(*) 
                                     <table class="table table-hover" id="tablaCamaras">
                                         <thead>
                                             <tr>
-                                                <th>FOTO</th><th>TIPO</th><th>MARCA / MODELO</th><th>IP</th>
-                                                <th>DVR/NVR</th><th>UBICACIÓN</th><th>ESTADO</th><th class="no-print">ACCIONES</th>
+                                                <th>FOTO</th>
+                                                <th class="sortable" onclick="ordenarTablaCamaras(1)" style="cursor:pointer;">TIPO <span id="flecha-1"></span></th>
+                                                <th class="sortable" onclick="ordenarTablaCamaras(2)" style="cursor:pointer;">MARCA / MODELO <span id="flecha-2"></span></th>
+                                                <th class="sortable" onclick="ordenarTablaCamaras(3)" style="cursor:pointer;">IP <span id="flecha-3"></span></th>
+                                                <th class="sortable" onclick="ordenarTablaCamaras(4)" style="cursor:pointer;">DVR/NVR <span id="flecha-4"></span></th>
+                                                <th class="sortable" onclick="ordenarTablaCamaras(5)" style="cursor:pointer;">UBICACIÓN <span id="flecha-5"></span></th>
+                                                <th class="sortable" onclick="ordenarTablaCamaras(6)" style="cursor:pointer;">ESTADO <span id="flecha-6"></span></th>
+                                                <th class="no-print">ACCIONES</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -283,6 +289,11 @@ $totalCamarasActivas = (int) mysqli_fetch_row($conexion->query("SELECT COUNT(*) 
                                             $foto = !empty($c['FOTO']) ? $c['FOTO'] : 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%23e9ecef%22/%3E%3Crect%20x%3D%2210%22%20y%3D%2222%22%20width%3D%2234%22%20height%3D%2224%22%20rx%3D%224%22%20fill%3D%22none%22%20stroke%3D%22%236c757d%22%20stroke-width%3D%223%22/%3E%3Cpath%20d%3D%22M20%2022l4-6h8l4%206%22%20fill%3D%22none%22%20stroke%3D%22%236c757d%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2227%22%20cy%3D%2234%22%20r%3D%227%22%20fill%3D%22none%22%20stroke%3D%22%236c757d%22%20stroke-width%3D%223%22/%3E%3Cpath%20d%3D%22M44%2028l10-5v18l-10-5z%22%20fill%3D%22%236c757d%22/%3E%3C/svg%3E';
                                             $dvrLabel = $c['ID_DVR'] ? trim($c['DVR_TIPO'].' '.$c['DVR_MARCA'].' ('.$c['DVR_UBICACION'].')') : 'Independiente';
                                             $filtro = strtolower($c['MARCA'].' '.$c['MODELO'].' '.$c['IP'].' '.$c['UBICACION']);
+                                            // IP "rellenada" (cada octeto a 3 dígitos) para que el orden de texto equivalga al numérico
+                                            $ipOrden = '';
+                                            if ($c['IP'] && preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/', $c['IP'])) {
+                                                $ipOrden = implode('.', array_map(function($o) { return str_pad($o, 3, '0', STR_PAD_LEFT); }, explode('.', $c['IP'])));
+                                            }
                                         ?>
                                             <tr data-filtro="<?php echo htmlspecialchars($filtro); ?>" data-dvr="<?php echo (int)$c['ID_DVR']; ?>" data-tipo="<?php echo htmlspecialchars($c['TIPO_CAMARA']); ?>">
                                                 <td>
@@ -291,18 +302,18 @@ $totalCamarasActivas = (int) mysqli_fetch_row($conexion->query("SELECT COUNT(*) 
                                                     <img src="<?php echo htmlspecialchars($c['CAPTURA_VISTA']); ?>" title="Vista de la cámara" style="width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;margin-left:3px;" onclick="verImagenCam('<?php echo htmlspecialchars($c['CAPTURA_VISTA']); ?>')">
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($c['TIPO_CAMARA']); ?></span></td>
-                                                <td>
+                                                <td data-sort="<?php echo htmlspecialchars($c['TIPO_CAMARA']); ?>"><span class="badge bg-info text-dark"><?php echo htmlspecialchars($c['TIPO_CAMARA']); ?></span></td>
+                                                <td data-sort="<?php echo htmlspecialchars(strtolower($c['MARCA'].' '.$c['MODELO'])); ?>">
                                                     <strong><?php echo htmlspecialchars($c['MARCA']); ?></strong>
                                                     <?php if (!empty($c['COMPARTIDA_HIKCONNECT'])): ?>
                                                         <i class="bi bi-share-fill text-success" title="Compartida vía HikConnect con proveedor de seguridad"></i>
                                                     <?php endif; ?>
                                                     <br><small class="text-muted"><?php echo htmlspecialchars($c['MODELO']); ?></small>
                                                 </td>
-                                                <td><?php echo htmlspecialchars($c['IP'] ?: '-'); ?></td>
-                                                <td class="small"><?php echo htmlspecialchars($dvrLabel); ?></td>
-                                                <td><?php echo htmlspecialchars($c['UBICACION'] ?: '-'); ?></td>
-                                                <td><span class="badge bg-success">Activa</span></td>
+                                                <td data-sort="<?php echo htmlspecialchars($ipOrden); ?>"><?php echo htmlspecialchars($c['IP'] ?: '-'); ?></td>
+                                                <td class="small" data-sort="<?php echo htmlspecialchars(strtolower($dvrLabel)); ?>"><?php echo htmlspecialchars($dvrLabel); ?></td>
+                                                <td data-sort="<?php echo htmlspecialchars(strtolower($c['UBICACION'] ?: '')); ?>"><?php echo htmlspecialchars($c['UBICACION'] ?: '-'); ?></td>
+                                                <td data-sort="Activa"><span class="badge bg-success">Activa</span></td>
                                                 <td class="no-print">
                                                     <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditarCam"
                                                         onclick='cargarCamara(<?php echo json_encode($c, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
@@ -442,6 +453,29 @@ function cargarCamara(c) {
     if (c.CAPTURA_VISTA) { capturaImg.src = c.CAPTURA_VISTA; capturaImg.style.display = 'inline-block'; capturaVacio.style.display = 'none'; }
     else { capturaImg.style.display = 'none'; capturaVacio.style.display = 'block'; }
 }
+var ordenActualCamaras = { col: null, asc: true };
+function ordenarTablaCamaras(col) {
+    var tbody = document.querySelector('#tablaCamaras tbody');
+    var filas = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+
+    var asc = ordenActualCamaras.col === col ? !ordenActualCamaras.asc : true;
+    ordenActualCamaras = { col: col, asc: asc };
+
+    for (var i = 1; i <= 6; i++) {
+        var flecha = document.getElementById('flecha-' + i);
+        if (flecha) flecha.textContent = (i === col) ? (asc ? '▲' : '▼') : '';
+    }
+
+    filas.sort(function(a, b) {
+        var va = (a.children[col].dataset.sort || '').trim();
+        var vb = (b.children[col].dataset.sort || '').trim();
+        var cmp = va.localeCompare(vb, 'es', { numeric: true });
+        return asc ? cmp : -cmp;
+    });
+
+    filas.forEach(function(fila) { tbody.appendChild(fila); });
+}
+
 function filtrarCamaras() {
     const texto = document.getElementById('buscadorCam').value.toLowerCase();
     const dvr = document.getElementById('filtroDvrCam').value;
