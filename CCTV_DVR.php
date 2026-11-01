@@ -19,6 +19,13 @@ if(!isset($_SESSION["rol"])){
     }
 }
 $rol_usuario = $_SESSION["rol"];
+
+// Subred más usada, para sugerirla por defecto en el buscador de IPs disponibles
+$subredSugerida = '192.168.11';
+$qSub = $conexion->query("SELECT SUBSTRING_INDEX(IP, '.', 3) AS SUBRED, COUNT(*) AS TOTAL FROM CCTV_CAMARA WHERE IP IS NOT NULL AND IP != '' AND ESTADO = 'A' GROUP BY SUBRED ORDER BY TOTAL DESC LIMIT 1");
+if ($qSub && $rowSub = $qSub->fetch_assoc()) {
+    $subredSugerida = $rowSub['SUBRED'];
+}
 ?>
 <head>
     <meta charset="utf-8">
@@ -170,7 +177,12 @@ $rol_usuario = $_SESSION["rol"];
                     <div class="tab-pane fade" id="tab-listado">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
-                                <input type="text" id="buscadorDvr" class="form-control mb-3" placeholder="Buscar por marca, modelo, IP o ubicación..." onkeyup="filtrarDvr()">
+                                <div class="d-flex gap-2 mb-3">
+                                    <input type="text" id="buscadorDvr" class="form-control" placeholder="Buscar por marca, modelo, IP o ubicación..." onkeyup="filtrarDvr()">
+                                    <button type="button" class="btn btn-outline-primary text-nowrap" data-bs-toggle="modal" data-bs-target="#modalIpsDisponibles">
+                                        <i class="bi bi-hdd-network"></i> IPs Disponibles
+                                    </button>
+                                </div>
                                 <div class="table-responsive">
                                     <table class="table table-hover" id="tablaDvr">
                                         <thead>
@@ -262,7 +274,12 @@ $rol_usuario = $_SESSION["rol"];
                         <div class="col-md-4 mb-3"><label class="form-label">Ubicación</label><input class="form-control" name="ubicacion" id="editUbicacion"></div>
                         <div class="col-md-4 mb-3"><label class="form-label">Fecha compra</label><input type="date" class="form-control" name="fechaCompra" id="editFechaCompra"></div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Nueva foto (opcional)</label>
+                            <label class="form-label">Foto</label>
+                            <div class="mb-2">
+                                <img id="editFotoDvrPreview" src="" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;display:none;cursor:pointer;" onclick="verImagenDvr(this.src)">
+                                <div id="editFotoDvrVacio" class="text-muted small">Sin foto registrada.</div>
+                            </div>
+                            <label class="form-label">Reemplazar (opcional)</label>
                             <input type="file" class="form-control" name="foto" accept="image/*">
                         </div>
                     </div>
@@ -284,7 +301,87 @@ $rol_usuario = $_SESSION["rol"];
     </div>
 </div>
 
+<!-- Modal IPs Disponibles -->
+<div class="modal fade" id="modalIpsDisponibles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-hdd-network"></i> Buscar IPs Disponibles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Subred</label>
+                        <input type="text" class="form-control" id="ipSubred" value="<?php echo htmlspecialchars($subredSugerida); ?>" placeholder="192.168.11">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Desde</label>
+                        <input type="number" class="form-control" id="ipDesde" value="1" min="1" max="254">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Hasta</label>
+                        <input type="number" class="form-control" id="ipHasta" value="254" min="1" max="254">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-primary w-100" onclick="buscarIpsDisponibles()"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+                <div id="ipsResultado">
+                    <p class="text-muted small">Define el rango y pulsa buscar para ver qué IPs están libres y cuáles ya están en uso.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+function buscarIpsDisponibles() {
+    var subred = document.getElementById('ipSubred').value.trim();
+    var desde = document.getElementById('ipDesde').value;
+    var hasta = document.getElementById('ipHasta').value;
+    var cont = document.getElementById('ipsResultado');
+    cont.innerHTML = '<p class="text-muted small">Buscando...</p>';
+
+    fetch('class/CCTV_IPsDisponibles.php?subred=' + encodeURIComponent(subred) + '&desde=' + desde + '&hasta=' + hasta)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                cont.innerHTML = '<div class="alert alert-danger">' + (data.error || 'Error desconocido') + '</div>';
+                return;
+            }
+            var html = '<div class="alert alert-success py-2 small mb-3">' +
+                '<i class="bi bi-check-circle"></i> ' + data.disponibles.length + ' IP(s) disponibles de ' +
+                (data.hasta - data.desde + 1) + ' revisadas en ' + data.subred + '.' + data.desde + ' - ' + data.subred + '.' + data.hasta +
+                '</div>';
+
+            html += '<h6 class="small text-success"><i class="bi bi-circle-fill"></i> Disponibles</h6>';
+            if (!data.disponibles.length) {
+                html += '<p class="text-muted small">No hay IPs libres en este rango.</p>';
+            } else {
+                html += '<div class="d-flex flex-wrap gap-2 mb-3">' +
+                    data.disponibles.map(function(ip) {
+                        return '<span class="badge border border-success text-success" style="font-size:0.85rem; background:#e9f9ef;">' + ip + '</span>';
+                    }).join('') + '</div>';
+            }
+
+            html += '<h6 class="small text-danger"><i class="bi bi-circle-fill"></i> Ocupadas (' + data.ocupadas.length + ')</h6>';
+            if (!data.ocupadas.length) {
+                html += '<p class="text-muted small">Ninguna.</p>';
+            } else {
+                html += '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>IP</th><th>Tipo</th><th>Equipo</th></tr></thead><tbody>' +
+                    data.ocupadas.map(function(o) {
+                        return '<tr><td>' + o.ip + '</td><td>' + o.tipo + '</td><td class="small">' + o.etiqueta + '</td></tr>';
+                    }).join('') + '</tbody></table></div>';
+            }
+
+            cont.innerHTML = html;
+        })
+        .catch(function() {
+            cont.innerHTML = '<div class="alert alert-danger">Error de comunicación con el servidor.</div>';
+        });
+}
+
 function cargarDvr(d) {
     document.getElementById('editIdDvr').value = d.ID_DVR;
     document.getElementById('editTipo').value = d.TIPO || 'DVR';
@@ -301,6 +398,11 @@ function cargarDvr(d) {
     document.getElementById('editObservacion').value = d.OBSERVACION || '';
     document.getElementById('editComentario').value = d.COMENTARIO || '';
     document.getElementById('editEstadoDvr').value = d.ESTADO || 'A';
+
+    const fotoImg = document.getElementById('editFotoDvrPreview');
+    const fotoVacio = document.getElementById('editFotoDvrVacio');
+    if (d.FOTO) { fotoImg.src = d.FOTO; fotoImg.style.display = 'inline-block'; fotoVacio.style.display = 'none'; }
+    else { fotoImg.style.display = 'none'; fotoVacio.style.display = 'block'; }
 }
 function filtrarDvr() {
     const texto = document.getElementById('buscadorDvr').value.toLowerCase();
