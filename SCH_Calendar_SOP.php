@@ -709,9 +709,16 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                                 <select class="form-select" name="idMantenimiento" required>
                                     <option value="">Seleccione equipo en reparación:</option>
                                     <?php
-                                      $queryM = $conexion->query("SELECT M.ID_MANTENIMIENTO, M.FECHA_SALIDA, E.MARCA, E.MODELO, E.SERIAL FROM INV_MANTENIMIENTOS M INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO WHERE M.ESTADO = 'En Reparacion'");
+                                      $queryM = $conexion->query("SELECT M.ID_MANTENIMIENTO, M.FECHA_SALIDA, E.MARCA, E.MODELO, E.SERIAL,
+                                                                           U.NOMBRES AS ASIG_NOMBRES, U.APELLIDOS AS ASIG_APELLIDOS
+                                                                    FROM INV_MANTENIMIENTOS M
+                                                                    INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO
+                                                                    LEFT JOIN INV_ASIGNACION A ON A.ID_EQUIPO = E.ID_EQUIPO AND A.ESTADO = 'A'
+                                                                    LEFT JOIN ADM_USUARIO U ON A.ID_ADM_USUARIO = U.IDADM_USUARIO
+                                                                    WHERE M.ESTADO = 'En Reparacion'");
                                       while ($valoresM = mysqli_fetch_array($queryM)) {
-                                        echo '<option value="'.$valoresM['ID_MANTENIMIENTO'].'">'.$valoresM['MARCA'].' '.$valoresM['MODELO'].' - '.$valoresM['SERIAL'].' (salió: '.$valoresM['FECHA_SALIDA'].')</option>';
+                                        $asigLabel = $valoresM['ASIG_NOMBRES'] ? ' - Asignado a: '.$valoresM['ASIG_NOMBRES'].' '.$valoresM['ASIG_APELLIDOS'] : '';
+                                        echo '<option value="'.$valoresM['ID_MANTENIMIENTO'].'">'.$valoresM['MARCA'].' '.$valoresM['MODELO'].' - '.$valoresM['SERIAL'].' (salió: '.$valoresM['FECHA_SALIDA'].')'.$asigLabel.'</option>';
                                       }
                                     ?>
                                 </select>
