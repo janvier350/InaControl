@@ -32,7 +32,8 @@ if ($result->num_rows > 0) {
     $_SESSION['expire'] = $_SESSION['start'] + (60 * 60);
 
     echo "<Script language='JavaScript'>";
-    echo 'self.location = "../SCH_Calendar_SOP.php"';
+    $destino = $row['CARGO'] === 'CONTRALOR' ? '../CONT_Estadisticas.php' : '../SCH_Calendar_SOP.php';
+    echo 'self.location = "' . $destino . '"';
      echo"</script>";
 
  } else {
