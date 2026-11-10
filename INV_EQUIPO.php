@@ -451,12 +451,12 @@ $rol_usuario = $_SESSION["rol"];
                                         <table class="table align-middle mb-0 bg-white" id="tablaEquipos">
     <thead class="bg-light">
         <tr>
+            <th>COMPRA</th>
             <th>EQUIPO</th>
             <th>ALMACENAMIENTO</th>
             <th>IDENTIFICACIÓN</th>
             <th>DEPARTAMENTO</th>
             <th>OBSERVACIONES</th>
-            <th>COMPRA</th>
             <th>ESTADO</th>
             <th>ASIGNADO A</th>
             <th>FECHA ASIGNACIÓN</th>
@@ -492,6 +492,27 @@ $rol_usuario = $_SESSION["rol"];
             data-dispositivo="<?php echo htmlspecialchars($valores['DISPOSITIVO']); ?>"
             data-departamento="<?php echo htmlspecialchars($valores['DEPARTAMENTO']); ?>">
             <td>
+                <?php
+                $fechaCompraTxt = $valores['FECHA_COMPRA'];
+                echo '<p class="fw-normal mb-1">' . htmlspecialchars($fechaCompraTxt) . '</p>';
+                if (!empty($fechaCompraTxt) && $fechaCompraTxt !== '0000-00-00') {
+                    try {
+                        $fechaCompraObj = new DateTime($fechaCompraTxt);
+                        $antiguedad = $fechaCompraObj->diff(new DateTime());
+                        $anios = $antiguedad->y;
+                        $meses = $antiguedad->m;
+                        $texto = $anios > 0 ? $anios . ' año' . ($anios != 1 ? 's' : '') : $meses . ' mes' . ($meses != 1 ? 'es' : '');
+                        $badgeClass = $anios >= 4 ? 'bg-danger' : ($anios >= 2 ? 'bg-warning text-dark' : 'bg-success');
+                        echo '<span class="badge ' . $badgeClass . '">' . $texto . '</span>';
+                    } catch (\Exception $e) {
+                        echo '<span class="text-muted small">-</span>';
+                    }
+                } else {
+                    echo '<span class="text-muted small">-</span>';
+                }
+                ?>
+            </td>
+            <td>
                 <div class="d-flex align-items-center">
                     <?php $imgEquipo = !empty($valores['IMAGEN']) ? $valores['IMAGEN'] : 'https://mdbootstrap.com/img/new/avatars/8.jpg'; ?>
                     <img src="<?php echo htmlspecialchars($imgEquipo); ?>"
@@ -514,7 +535,6 @@ $rol_usuario = $_SESSION["rol"];
             </td>
             <td><p class="fw-normal mb-1"><?php echo htmlspecialchars($valores['DEPARTAMENTO']); ?></p></td>
             <td><p class="fw-normal mb-1"><?php echo htmlspecialchars($valores['OBSERVACIONES']); ?></p></td>
-            <td><p class="fw-normal mb-1"><?php echo $valores['FECHA_COMPRA']; ?></p></td>
             <td><p class="fw-normal mb-1"><?php echo $valores['ESTADO']; ?></p></td>
             <td><p class="fw-normal mb-1"><?php echo $asigNombre; ?></p></td>
             <td><p class="fw-normal mb-1"><?php echo $asigFecha; ?></p></td>
