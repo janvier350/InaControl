@@ -251,6 +251,8 @@ new Chart(document.getElementById('chartTop'), {
     options: { maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
 });
 </script>
+<script src="js/jquery.min.js"></script>
+<script type="text/javascript" src="./assets/scripts/main.js"></script>
 </body>
 </html>
 <?php ob_end_flush(); ?>
