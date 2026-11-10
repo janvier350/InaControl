@@ -6,6 +6,14 @@ session_start();
 require_once("class/funciones.php");
 require_once("class/conexionBD.php");
 $conexion = conectarse();
+
+// Convierte saltos de línea reales (\r\n, \n) y también literales escapados
+// ("\r\n" tecleados como texto) a <br>, escapando el resto del contenido.
+function textoConSaltos($texto) {
+    if ($texto === null || $texto === '') { return ''; }
+    $texto = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $texto);
+    return nl2br(htmlspecialchars($texto));
+}
 // Verificación de sesión y tiempo de expiración
 if(!isset($_SESSION["rol"])){
     header("Location: break.php");
@@ -648,9 +656,9 @@ $rol_usuario = $_SESSION["rol"];
                                                     <td><?php echo htmlspecialchars($mant['MARCA'].' '.$mant['MODELO']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['SERIAL']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['FECHA_SALIDA']); ?></td>
-                                                    <td><?php echo htmlspecialchars($mant['DANIO_REPORTADO']); ?></td>
+                                                    <td><?php echo textoConSaltos($mant['DANIO_REPORTADO']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['FECHA_ENTREGA'] ?? '-'); ?></td>
-                                                    <td><?php echo htmlspecialchars($mant['SOLUCION_APLICADA'] ?? '-'); ?></td>
+                                                    <td><?php echo $mant['SOLUCION_APLICADA'] ? textoConSaltos($mant['SOLUCION_APLICADA']) : '-'; ?></td>
                                                     <td><?php echo $asigNombreMant ? htmlspecialchars($asigNombreMant) : '<span class="text-muted">-</span>'; ?></td>
                                                     <td>
                                                         <?php
@@ -675,8 +683,8 @@ $rol_usuario = $_SESSION["rol"];
                                                             onclick='cargarMantenimiento(<?php echo json_encode([
                                                                 "ID_MANTENIMIENTO" => $mant["ID_MANTENIMIENTO"],
                                                                 "EQUIPO" => trim($mant["MARCA"].' '.$mant["MODELO"].' - '.$mant["SERIAL"]),
-                                                                "DANIO_REPORTADO" => $mant["DANIO_REPORTADO"],
-                                                                "SOLUCION_APLICADA" => $mant["SOLUCION_APLICADA"],
+                                                                "DANIO_REPORTADO" => str_replace(['\\r\\n', '\\n', '\\r'], "\n", $mant["DANIO_REPORTADO"]),
+                                                                "SOLUCION_APLICADA" => str_replace(['\\r\\n', '\\n', '\\r'], "\n", $mant["SOLUCION_APLICADA"]),
                                                                 "ESTADO" => $mant["ESTADO"],
                                                                 "EVIDENCIAS_SALIDA" => !empty($mant["EVIDENCIAS_SALIDA"]) ? explode(',', $mant["EVIDENCIAS_SALIDA"]) : [],
                                                                 "EVIDENCIAS_ENTREGA" => !empty($mant["EVIDENCIAS_ENTREGA"]) ? explode(',', $mant["EVIDENCIAS_ENTREGA"]) : [],
