@@ -557,7 +557,31 @@ $rol_usuario = $_SESSION["rol"];
                             <div class="tab-pane tabs-animation fade" id="tab-content-2" role="tabpanel">
                                 <div class="main-card mb-3 card">
                                     <div class="card-body">
-                                        <table class="table align-middle mb-0 bg-white">
+                                        <div class="row mb-3 g-2">
+                                            <div class="col-md-4">
+                                                <input type="text" id="buscadorMant" class="form-control form-control-sm" placeholder="Buscar por equipo, serie o daño..." onkeyup="filtrarMantenimientos()">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <select id="filtroEstadoMant" class="form-select form-select-sm" onchange="filtrarMantenimientos()">
+                                                    <option value="">-- Todos los estados --</option>
+                                                    <option value="En Reparacion">En Reparación</option>
+                                                    <option value="Completado">Completado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <select id="filtroUsuarioMant" class="form-select form-select-sm" onchange="filtrarMantenimientos()">
+                                                    <option value="">-- Todos los usuarios --</option>
+                                                    <?php
+                                                      $qFUM = $conexion->query("SELECT DISTINCT U.NOMBRES, U.APELLIDOS FROM INV_ASIGNACION A INNER JOIN ADM_USUARIO U ON A.ID_ADM_USUARIO = U.IDADM_USUARIO WHERE A.ESTADO='A' ORDER BY U.NOMBRES");
+                                                      while ($fum = mysqli_fetch_array($qFUM)) {
+                                                        $nombreU = htmlspecialchars($fum['NOMBRES'].' '.$fum['APELLIDOS']);
+                                                        echo '<option value="'.$nombreU.'">'.$nombreU.'</option>';
+                                                      }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <table class="table align-middle mb-0 bg-white" id="tablaMantenimientos">
                                             <thead class="bg-light">
                                                 <tr>
                                                     <th>EQUIPO</th>
@@ -566,6 +590,7 @@ $rol_usuario = $_SESSION["rol"];
                                                     <th>DAÑO REPORTADO</th>
                                                     <th>FECHA ENTREGA</th>
                                                     <th>SOLUCIÓN APLICADA</th>
+                                                    <th>USUARIO ASIGNADO</th>
                                                     <th>EVIDENCIAS</th>
                                                     <th>ESTADO</th>
                                                 </tr>
@@ -573,9 +598,12 @@ $rol_usuario = $_SESSION["rol"];
                                             <tbody>
                                                 <?php
                                                 $sqlMant = "SELECT M.FECHA_SALIDA, M.DANIO_REPORTADO, M.EVIDENCIAS_SALIDA, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.EVIDENCIAS_ENTREGA, M.ESTADO,
-                                                                   E.MARCA, E.MODELO, E.SERIAL
+                                                                   E.MARCA, E.MODELO, E.SERIAL,
+                                                                   U.NOMBRES AS ASIG_NOMBRES, U.APELLIDOS AS ASIG_APELLIDOS
                                                             FROM INV_MANTENIMIENTOS M
                                                             INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO
+                                                            LEFT JOIN INV_ASIGNACION A ON A.ID_EQUIPO = E.ID_EQUIPO AND A.ESTADO = 'A'
+                                                            LEFT JOIN ADM_USUARIO U ON A.ID_ADM_USUARIO = U.IDADM_USUARIO
                                                             ORDER BY M.FECHA_SALIDA DESC";
                                                 $queryMant = null;
                                                 $errorMant = null;
@@ -589,17 +617,20 @@ $rol_usuario = $_SESSION["rol"];
                                                 }
 
                                                 if ($errorMant) {
-                                                    echo "<tr><td colspan='7' class='text-center text-danger'>Error al cargar el historial: " . htmlspecialchars($errorMant) . ". Verifique que la tabla INV_MANTENIMIENTOS tenga las columnas EVIDENCIAS_SALIDA y EVIDENCIAS_ENTREGA (sql/INV_MANTENIMIENTOS_ALTER_01.sql).</td></tr>";
+                                                    echo "<tr><td colspan='9' class='text-center text-danger'>Error al cargar el historial: " . htmlspecialchars($errorMant) . ". Verifique que la tabla INV_MANTENIMIENTOS tenga las columnas EVIDENCIAS_SALIDA y EVIDENCIAS_ENTREGA (sql/INV_MANTENIMIENTOS_ALTER_01.sql).</td></tr>";
                                                 } elseif ($queryMant && $queryMant->num_rows > 0) {
                                                     while ($mant = mysqli_fetch_array($queryMant)) {
+                                                        $asigNombreMant = $mant['ASIG_NOMBRES'] ? trim($mant['ASIG_NOMBRES'].' '.$mant['ASIG_APELLIDOS']) : '';
+                                                        $filtroMant = strtolower($mant['MARCA'].' '.$mant['MODELO'].' '.$mant['SERIAL'].' '.$mant['DANIO_REPORTADO']);
                                                 ?>
-                                                <tr>
+                                                <tr data-filtro="<?php echo htmlspecialchars($filtroMant); ?>" data-estado="<?php echo htmlspecialchars($mant['ESTADO']); ?>" data-usuario="<?php echo htmlspecialchars($asigNombreMant); ?>">
                                                     <td><?php echo htmlspecialchars($mant['MARCA'].' '.$mant['MODELO']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['SERIAL']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['FECHA_SALIDA']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['DANIO_REPORTADO']); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['FECHA_ENTREGA'] ?? '-'); ?></td>
                                                     <td><?php echo htmlspecialchars($mant['SOLUCION_APLICADA'] ?? '-'); ?></td>
+                                                    <td><?php echo $asigNombreMant ? htmlspecialchars($asigNombreMant) : '<span class="text-muted">-</span>'; ?></td>
                                                     <td>
                                                         <?php
                                                         $evidsMant = [];
@@ -622,7 +653,7 @@ $rol_usuario = $_SESSION["rol"];
                                                 <?php
                                                     }
                                                 } else {
-                                                    echo "<tr><td colspan='7' class='text-center'>No hay mantenimientos registrados</td></tr>";
+                                                    echo "<tr><td colspan='9' class='text-center'>No hay mantenimientos registrados</td></tr>";
                                                 }
                                                 ?>
                                             </tbody>
@@ -834,6 +865,23 @@ function filtrarTabla() {
         var visible  = (!usuario || fUsuario.indexOf(usuario) >= 0)
                     && (!dispositivo || fDisp === dispositivo)
                     && (!depto || fDepto === depto);
+        fila.style.display = visible ? '' : 'none';
+    });
+}
+
+function filtrarMantenimientos() {
+    var texto   = document.getElementById('buscadorMant').value.toLowerCase();
+    var estado  = document.getElementById('filtroEstadoMant').value;
+    var usuario = document.getElementById('filtroUsuarioMant').value.toLowerCase();
+    var filas = document.querySelectorAll('#tablaMantenimientos tbody tr');
+    filas.forEach(function(fila) {
+        if (!fila.dataset.filtro) { return; }
+        var fTexto   = fila.dataset.filtro || '';
+        var fEstado  = fila.dataset.estado || '';
+        var fUsuario = (fila.dataset.usuario || '').toLowerCase();
+        var visible  = (!texto || fTexto.indexOf(texto) >= 0)
+                    && (!estado || fEstado === estado)
+                    && (!usuario || fUsuario === usuario);
         fila.style.display = visible ? '' : 'none';
     });
 }
