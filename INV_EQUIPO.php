@@ -239,17 +239,17 @@ $rol_usuario = $_SESSION["rol"];
                         </div>            
                         <ul class="body-tabs body-tabs-layout tabs-animated body-tabs-animated nav">
                             <li class="nav-item">
-                                <a role="tab" class="nav-link active" id="tab-0" data-toggle="tab" href="#tab-content-0">
+                                <a role="tab" class="nav-link active" id="tab-0" data-bs-toggle="tab" href="#tab-content-0">
                                     <span>Registrar</span>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a role="tab" class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1">
+                                <a role="tab" class="nav-link" id="tab-1" data-bs-toggle="tab" href="#tab-content-1">
                                     <span>Listado</span>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a role="tab" class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2">
+                                <a role="tab" class="nav-link" id="tab-2" data-bs-toggle="tab" href="#tab-content-2">
                                     <span>Historial Mantenimientos</span>
                                 </a>
                             </li>
