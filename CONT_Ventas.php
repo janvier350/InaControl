@@ -82,13 +82,14 @@ while ($p = mysqli_fetch_assoc($qProd)) {
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
 
+                <?php $verListado = isset($_GET['anio']) || isset($_GET['mes']) || isset($_GET['tipo']); ?>
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-registrar">Registrar</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-listado">Listado</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $verListado ? '' : 'active'; ?>" data-bs-toggle="tab" href="#tab-registrar">Registrar</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $verListado ? 'active' : ''; ?>" data-bs-toggle="tab" href="#tab-listado">Listado</a></li>
                 </ul>
                 <div class="tab-content pt-3">
                     <!-- Registrar -->
-                    <div class="tab-pane fade show active" id="tab-registrar">
+                    <div class="tab-pane fade <?php echo $verListado ? '' : 'show active'; ?>" id="tab-registrar">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
                                 <form method="POST" action="class/Insert_Venta.php" onsubmit="return validarVenta();">
@@ -142,7 +143,7 @@ while ($p = mysqli_fetch_assoc($qProd)) {
                     </div>
 
                     <!-- Listado -->
-                    <div class="tab-pane fade" id="tab-listado">
+                    <div class="tab-pane fade <?php echo $verListado ? 'show active' : ''; ?>" id="tab-listado">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
                                 <?php
