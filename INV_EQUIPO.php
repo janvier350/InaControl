@@ -7,12 +7,16 @@ require_once("class/funciones.php");
 require_once("class/conexionBD.php");
 $conexion = conectarse();
 
-// Convierte saltos de línea reales (\r\n, \n) y también literales escapados
-// ("\r\n" tecleados como texto) a <br>, escapando el resto del contenido.
-function textoConSaltos($texto) {
+// Normaliza saltos de línea: reales, escapados como texto ("\r\n") o con una
+// barra invertida suelta antes del salto, todo a saltos de línea reales.
+function limpiarSaltos($texto) {
     if ($texto === null || $texto === '') { return ''; }
     $texto = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $texto);
-    return nl2br(htmlspecialchars($texto));
+    $texto = preg_replace('/\\\\\s*(\r\n|\r|\n)/', "\n", $texto);
+    return rtrim($texto, "\\ \t\n\r\0\x0B");
+}
+function textoConSaltos($texto) {
+    return nl2br(htmlspecialchars(limpiarSaltos($texto)));
 }
 // Verificación de sesión y tiempo de expiración
 if(!isset($_SESSION["rol"])){
@@ -683,8 +687,8 @@ $rol_usuario = $_SESSION["rol"];
                                                             onclick='cargarMantenimiento(<?php echo json_encode([
                                                                 "ID_MANTENIMIENTO" => $mant["ID_MANTENIMIENTO"],
                                                                 "EQUIPO" => trim($mant["MARCA"].' '.$mant["MODELO"].' - '.$mant["SERIAL"]),
-                                                                "DANIO_REPORTADO" => str_replace(['\\r\\n', '\\n', '\\r'], "\n", $mant["DANIO_REPORTADO"]),
-                                                                "SOLUCION_APLICADA" => str_replace(['\\r\\n', '\\n', '\\r'], "\n", $mant["SOLUCION_APLICADA"]),
+                                                                "DANIO_REPORTADO" => limpiarSaltos($mant["DANIO_REPORTADO"]),
+                                                                "SOLUCION_APLICADA" => limpiarSaltos($mant["SOLUCION_APLICADA"]),
                                                                 "ESTADO" => $mant["ESTADO"],
                                                                 "EVIDENCIAS_SALIDA" => !empty($mant["EVIDENCIAS_SALIDA"]) ? explode(',', $mant["EVIDENCIAS_SALIDA"]) : [],
                                                                 "EVIDENCIAS_ENTREGA" => !empty($mant["EVIDENCIAS_ENTREGA"]) ? explode(',', $mant["EVIDENCIAS_ENTREGA"]) : [],
