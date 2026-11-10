@@ -593,11 +593,12 @@ $rol_usuario = $_SESSION["rol"];
                                                     <th>USUARIO ASIGNADO</th>
                                                     <th>EVIDENCIAS</th>
                                                     <th>ESTADO</th>
+                                                    <th>ACCIONES</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php
-                                                $sqlMant = "SELECT M.FECHA_SALIDA, M.DANIO_REPORTADO, M.EVIDENCIAS_SALIDA, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.EVIDENCIAS_ENTREGA, M.ESTADO,
+                                                $sqlMant = "SELECT M.ID_MANTENIMIENTO, M.FECHA_SALIDA, M.DANIO_REPORTADO, M.EVIDENCIAS_SALIDA, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.EVIDENCIAS_ENTREGA, M.ESTADO,
                                                                    E.MARCA, E.MODELO, E.SERIAL,
                                                                    U.NOMBRES AS ASIG_NOMBRES, U.APELLIDOS AS ASIG_APELLIDOS
                                                             FROM INV_MANTENIMIENTOS M
@@ -617,7 +618,7 @@ $rol_usuario = $_SESSION["rol"];
                                                 }
 
                                                 if ($errorMant) {
-                                                    echo "<tr><td colspan='9' class='text-center text-danger'>Error al cargar el historial: " . htmlspecialchars($errorMant) . ". Verifique que la tabla INV_MANTENIMIENTOS tenga las columnas EVIDENCIAS_SALIDA y EVIDENCIAS_ENTREGA (sql/INV_MANTENIMIENTOS_ALTER_01.sql).</td></tr>";
+                                                    echo "<tr><td colspan='10' class='text-center text-danger'>Error al cargar el historial: " . htmlspecialchars($errorMant) . ". Verifique que la tabla INV_MANTENIMIENTOS tenga las columnas EVIDENCIAS_SALIDA y EVIDENCIAS_ENTREGA (sql/INV_MANTENIMIENTOS_ALTER_01.sql).</td></tr>";
                                                 } elseif ($queryMant && $queryMant->num_rows > 0) {
                                                     while ($mant = mysqli_fetch_array($queryMant)) {
                                                         $asigNombreMant = $mant['ASIG_NOMBRES'] ? trim($mant['ASIG_NOMBRES'].' '.$mant['ASIG_APELLIDOS']) : '';
@@ -649,11 +650,25 @@ $rol_usuario = $_SESSION["rol"];
                                                             <span class="badge bg-success">Completado</span>
                                                         <?php } ?>
                                                     </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditarMantenimiento"
+                                                            onclick='cargarMantenimiento(<?php echo json_encode([
+                                                                "ID_MANTENIMIENTO" => $mant["ID_MANTENIMIENTO"],
+                                                                "EQUIPO" => trim($mant["MARCA"].' '.$mant["MODELO"].' - '.$mant["SERIAL"]),
+                                                                "DANIO_REPORTADO" => $mant["DANIO_REPORTADO"],
+                                                                "SOLUCION_APLICADA" => $mant["SOLUCION_APLICADA"],
+                                                                "ESTADO" => $mant["ESTADO"],
+                                                                "EVIDENCIAS_SALIDA" => !empty($mant["EVIDENCIAS_SALIDA"]) ? explode(',', $mant["EVIDENCIAS_SALIDA"]) : [],
+                                                                "EVIDENCIAS_ENTREGA" => !empty($mant["EVIDENCIAS_ENTREGA"]) ? explode(',', $mant["EVIDENCIAS_ENTREGA"]) : [],
+                                                            ], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                                 <?php
                                                     }
                                                 } else {
-                                                    echo "<tr><td colspan='9' class='text-center'>No hay mantenimientos registrados</td></tr>";
+                                                    echo "<tr><td colspan='10' class='text-center'>No hay mantenimientos registrados</td></tr>";
                                                 }
                                                 ?>
                                             </tbody>
@@ -852,6 +867,59 @@ $rol_usuario = $_SESSION["rol"];
     </div>
 </div>
 
+<!-- Modal Editar Mantenimiento -->
+<div class="modal fade" id="modalEditarMantenimiento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-tools"></i> Editar Mantenimiento — <span id="editMantEquipoLabel"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="class/Editar_Mantenimiento.php" enctype="multipart/form-data">
+                    <input type="hidden" name="idMantenimiento" id="editMantId">
+                    <div class="mb-3">
+                        <label class="form-label">Daño / problema reportado</label>
+                        <textarea class="form-control" name="danioReportado" id="editMantDanio" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Solución aplicada</label>
+                        <textarea class="form-control" name="solucionAplicada" id="editMantSolucion" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" name="estado" id="editMantEstado">
+                            <option value="En Reparacion">En Reparación</option>
+                            <option value="Completado">Completado</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Evidencias de salida</label>
+                        <div id="editMantEvidSalida" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;"></div>
+                        <input type="file" class="form-control" name="evidenciasSalidaNuevas[]" multiple accept="image/*">
+                        <div class="form-text">Se agregan a las existentes. Usa la "×" para quitar alguna.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Evidencias de entrega</label>
+                        <div id="editMantEvidEntrega" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;"></div>
+                        <input type="file" class="form-control" name="evidenciasEntregaNuevas[]" multiple accept="image/*">
+                        <div class="form-text">Se agregan a las existentes. Usa la "×" para quitar alguna.</div>
+                    </div>
+
+                    <input type="hidden" name="evidenciasSalidaEliminar" id="editMantSalidaEliminar">
+                    <input type="hidden" name="evidenciasEntregaEliminar" id="editMantEntregaEliminar">
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function filtrarTabla() {
     var usuario     = document.getElementById('filtroUsuario').value.toLowerCase();
@@ -884,6 +952,53 @@ function filtrarMantenimientos() {
                     && (!usuario || fUsuario === usuario);
         fila.style.display = visible ? '' : 'none';
     });
+}
+
+var mantEvidSalidaActuales = [];
+var mantEvidSalidaEliminar = [];
+var mantEvidEntregaActuales = [];
+var mantEvidEntregaEliminar = [];
+
+function cargarMantenimiento(m) {
+    document.getElementById('editMantId').value = m.ID_MANTENIMIENTO;
+    document.getElementById('editMantEquipoLabel').textContent = m.EQUIPO;
+    document.getElementById('editMantDanio').value = m.DANIO_REPORTADO || '';
+    document.getElementById('editMantSolucion').value = m.SOLUCION_APLICADA || '';
+    document.getElementById('editMantEstado').value = m.ESTADO || 'En Reparacion';
+
+    mantEvidSalidaActuales = m.EVIDENCIAS_SALIDA || [];
+    mantEvidSalidaEliminar = [];
+    mantEvidEntregaActuales = m.EVIDENCIAS_ENTREGA || [];
+    mantEvidEntregaEliminar = [];
+
+    renderEvidenciasMant('salida');
+    renderEvidenciasMant('entrega');
+}
+
+function renderEvidenciasMant(tipo) {
+    var actuales = tipo === 'salida' ? mantEvidSalidaActuales : mantEvidEntregaActuales;
+    var eliminar  = tipo === 'salida' ? mantEvidSalidaEliminar  : mantEvidEntregaEliminar;
+    var cont = document.getElementById(tipo === 'salida' ? 'editMantEvidSalida' : 'editMantEvidEntrega');
+    var visibles = actuales.filter(function(src) { return eliminar.indexOf(src) === -1; });
+
+    if (!visibles.length) {
+        cont.innerHTML = '<span class="text-muted small">Sin evidencias.</span>';
+    } else {
+        cont.innerHTML = visibles.map(function(src) {
+            return '<div style="position:relative;">' +
+                '<img src="' + src + '" style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">' +
+                '<button type="button" onclick="quitarEvidenciaMant(\'' + tipo + '\',\'' + src + '\')" ' +
+                'style="position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:#dc3545;color:#fff;border:none;line-height:1;font-size:.8rem;">&times;</button>' +
+            '</div>';
+        }).join('');
+    }
+
+    document.getElementById(tipo === 'salida' ? 'editMantSalidaEliminar' : 'editMantEntregaEliminar').value = JSON.stringify(eliminar);
+}
+
+function quitarEvidenciaMant(tipo, src) {
+    if (tipo === 'salida') { mantEvidSalidaEliminar.push(src); } else { mantEvidEntregaEliminar.push(src); }
+    renderEvidenciasMant(tipo);
 }
 
 function prepararAsignacion(idEquipo, equipoLabel) {
