@@ -577,9 +577,20 @@ $rol_usuario = $_SESSION["rol"];
                                                             FROM INV_MANTENIMIENTOS M
                                                             INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO
                                                             ORDER BY M.FECHA_SALIDA DESC";
-                                                $queryMant = $conexion->query($sqlMant);
+                                                $queryMant = null;
+                                                $errorMant = null;
+                                                try {
+                                                    $queryMant = $conexion->query($sqlMant);
+                                                    if (!$queryMant) {
+                                                        $errorMant = $conexion->error;
+                                                    }
+                                                } catch (\mysqli_sql_exception $e) {
+                                                    $errorMant = $e->getMessage();
+                                                }
 
-                                                if ($queryMant && $queryMant->num_rows > 0) {
+                                                if ($errorMant) {
+                                                    echo "<tr><td colspan='7' class='text-center text-danger'>Error al cargar el historial: " . htmlspecialchars($errorMant) . ". Verifique que la tabla INV_MANTENIMIENTOS tenga las columnas EVIDENCIAS_SALIDA y EVIDENCIAS_ENTREGA (sql/INV_MANTENIMIENTOS_ALTER_01.sql).</td></tr>";
+                                                } elseif ($queryMant && $queryMant->num_rows > 0) {
                                                     while ($mant = mysqli_fetch_array($queryMant)) {
                                                 ?>
                                                 <tr>
