@@ -20,18 +20,44 @@ if(!isset($_SESSION["rol"])){
 }
 $rol_usuario = $_SESSION["rol"];
 
-$estadoFiltro = $_GET['estado'] ?? '';
-$sqlSec = "SELECT * FROM CONT_BASCULA_SECUENCIA";
-if ($estadoFiltro !== '') {
-    $sqlSec .= " WHERE ESTADO = '" . mysqli_real_escape_string($conexion, $estadoFiltro) . "'";
-}
-$sqlSec .= " ORDER BY NUMERO ASC";
-$resSec = $conexion->query($sqlSec);
-$secuenciasJs = [];
+$errorTablas = null;
 $filas = [];
-while ($s = mysqli_fetch_assoc($resSec)) {
-    $filas[] = $s;
-    $secuenciasJs[$s['ID_SECUENCIA']] = $s;
+$filasListado = [];
+
+$estadoFiltro = $_GET['estado'] ?? '';
+$proveedorFiltro = trim($_GET['proveedor'] ?? '');
+$fechaDesde = trim($_GET['fecha_desde'] ?? '');
+$fechaHasta = trim($_GET['fecha_hasta'] ?? '');
+$verListado = isset($_GET['proveedor']) || isset($_GET['fecha_desde']) || isset($_GET['fecha_hasta']);
+
+try {
+    $sqlSec = "SELECT * FROM CONT_BASCULA_SECUENCIA";
+    if ($estadoFiltro !== '') {
+        $sqlSec .= " WHERE ESTADO = '" . mysqli_real_escape_string($conexion, $estadoFiltro) . "'";
+    }
+    $sqlSec .= " ORDER BY NUMERO ASC";
+    $resSec = $conexion->query($sqlSec);
+    while ($s = mysqli_fetch_assoc($resSec)) {
+        $filas[] = $s;
+    }
+
+    $sqlList = "SELECT * FROM CONT_BASCULA_SECUENCIA WHERE 1=1";
+    $types = ""; $params = [];
+    if ($estadoFiltro !== '') { $sqlList .= " AND ESTADO = ?"; $types .= "s"; $params[] = $estadoFiltro; }
+    if ($proveedorFiltro !== '') { $sqlList .= " AND PROVEEDOR_CLIENTE LIKE ?"; $types .= "s"; $params[] = "%$proveedorFiltro%"; }
+    if ($fechaDesde !== '') { $sqlList .= " AND FECHA >= ?"; $types .= "s"; $params[] = $fechaDesde; }
+    if ($fechaHasta !== '') { $sqlList .= " AND FECHA <= ?"; $types .= "s"; $params[] = $fechaHasta; }
+    $sqlList .= " ORDER BY NUMERO ASC";
+
+    $stmtList = mysqli_prepare($conexion, $sqlList);
+    if ($types !== '') { mysqli_stmt_bind_param($stmtList, $types, ...$params); }
+    mysqli_stmt_execute($stmtList);
+    $resList = mysqli_stmt_get_result($stmtList);
+    while ($s = mysqli_fetch_assoc($resList)) {
+        $filasListado[] = $s;
+    }
+} catch (mysqli_sql_exception $e) {
+    $errorTablas = "No se pudieron cargar las secuencias. Verifique que el script sql/CONTRALOR_BASCULA.sql haya sido ejecutado en la base de datos.";
 }
 ?>
 <head>
@@ -97,37 +123,100 @@ while ($s = mysqli_fetch_assoc($resSec)) {
                     <div class="alert alert-danger alert-dismissible fade show">Error: <?php echo htmlspecialchars($_GET['error']); ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
+                <?php if ($errorTablas): ?>
+                    <div class="alert alert-danger"><?php echo htmlspecialchars($errorTablas); ?></div>
+                <?php endif; ?>
 
-                <div class="main-card mb-3 card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
-                            <span class="badge estado-pendiente border">. Pendiente</span>
-                            <span class="badge estado-usado">✓ Usado</span>
-                            <span class="badge estado-anulado">A Anulado</span>
-                            <form method="GET" class="ms-auto">
-                                <select class="form-select form-select-sm" name="estado" onchange="this.form.submit()">
-                                    <option value="">Todos los estados</option>
-                                    <option value="PENDIENTE" <?php echo $estadoFiltro === 'PENDIENTE' ? 'selected' : ''; ?>>Pendiente</option>
-                                    <option value="USADO" <?php echo $estadoFiltro === 'USADO' ? 'selected' : ''; ?>>Usado</option>
-                                    <option value="ANULADO" <?php echo $estadoFiltro === 'ANULADO' ? 'selected' : ''; ?>>Anulado</option>
-                                </select>
-                            </form>
-                        </div>
-                        <?php if (empty($filas)): ?>
-                            <p class="text-muted">No hay secuencias cargadas. Usa "Cargar Rango" para comenzar.</p>
-                        <?php else: ?>
-                            <div>
-                                <?php foreach ($filas as $s):
-                                    $clase = $s['ESTADO'] === 'USADO' ? 'estado-usado' : ($s['ESTADO'] === 'ANULADO' ? 'estado-anulado' : 'estado-pendiente');
-                                ?>
-                                    <button type="button" class="btn btn-num <?php echo $clase; ?>"
-                                        data-bs-toggle="modal" data-bs-target="#modalSecuencia"
-                                        onclick='cargarSecuencia(<?php echo json_encode($s, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
-                                        <?php echo $s['NUMERO']; ?>
-                                    </button>
-                                <?php endforeach; ?>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item"><a class="nav-link <?php echo $verListado ? '' : 'active'; ?>" data-bs-toggle="tab" href="#tab-cuadricula">Cuadrícula</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $verListado ? 'active' : ''; ?>" data-bs-toggle="tab" href="#tab-listado">Listado</a></li>
+                </ul>
+                <div class="tab-content pt-3">
+
+                    <!-- Cuadricula -->
+                    <div class="tab-pane fade <?php echo $verListado ? '' : 'show active'; ?>" id="tab-cuadricula">
+                        <div class="main-card mb-3 card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+                                    <span class="badge estado-pendiente border">. Pendiente</span>
+                                    <span class="badge estado-usado">✓ Usado</span>
+                                    <span class="badge estado-anulado">A Anulado</span>
+                                    <form method="GET" class="ms-auto">
+                                        <select class="form-select form-select-sm" name="estado" onchange="this.form.submit()">
+                                            <option value="">Todos los estados</option>
+                                            <option value="PENDIENTE" <?php echo $estadoFiltro === 'PENDIENTE' ? 'selected' : ''; ?>>Pendiente</option>
+                                            <option value="USADO" <?php echo $estadoFiltro === 'USADO' ? 'selected' : ''; ?>>Usado</option>
+                                            <option value="ANULADO" <?php echo $estadoFiltro === 'ANULADO' ? 'selected' : ''; ?>>Anulado</option>
+                                        </select>
+                                    </form>
+                                </div>
+                                <?php if (empty($filas)): ?>
+                                    <p class="text-muted">No hay secuencias cargadas. Usa "Cargar Rango" para comenzar.</p>
+                                <?php else: ?>
+                                    <div>
+                                        <?php foreach ($filas as $s):
+                                            $clase = $s['ESTADO'] === 'USADO' ? 'estado-usado' : ($s['ESTADO'] === 'ANULADO' ? 'estado-anulado' : 'estado-pendiente');
+                                        ?>
+                                            <button type="button" class="btn btn-num <?php echo $clase; ?>"
+                                                data-bs-toggle="modal" data-bs-target="#modalSecuencia"
+                                                onclick='cargarSecuencia(<?php echo json_encode($s, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
+                                                <?php echo $s['NUMERO']; ?>
+                                            </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                        <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Listado -->
+                    <div class="tab-pane fade <?php echo $verListado ? 'show active' : ''; ?>" id="tab-listado">
+                        <div class="main-card mb-3 card">
+                            <div class="card-body">
+                                <form method="GET" class="row g-2 mb-3">
+                                    <div class="col-md-3">
+                                        <select class="form-select" name="estado">
+                                            <option value="">Todos los estados</option>
+                                            <option value="PENDIENTE" <?php echo $estadoFiltro === 'PENDIENTE' ? 'selected' : ''; ?>>Pendiente</option>
+                                            <option value="USADO" <?php echo $estadoFiltro === 'USADO' ? 'selected' : ''; ?>>Usado</option>
+                                            <option value="ANULADO" <?php echo $estadoFiltro === 'ANULADO' ? 'selected' : ''; ?>>Anulado</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" class="form-control" name="proveedor" placeholder="Proveedor / Cliente" value="<?php echo htmlspecialchars($proveedorFiltro); ?>">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="date" class="form-control" name="fecha_desde" value="<?php echo htmlspecialchars($fechaDesde); ?>">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="date" class="form-control" name="fecha_hasta" value="<?php echo htmlspecialchars($fechaHasta); ?>">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter"></i> Filtrar</button>
+                                    </div>
+                                </form>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead><tr><th>N°</th><th>ESTADO</th><th>FECHA</th><th>PROVEEDOR/CLIENTE</th><th>PESO BRUTO</th><th>TARA</th><th>PESO NETO</th></tr></thead>
+                                        <tbody>
+                                        <?php if (empty($filasListado)): ?>
+                                            <tr><td colspan="7" class="text-center text-muted">Sin resultados para este filtro.</td></tr>
+                                        <?php else: foreach ($filasListado as $s): ?>
+                                            <tr>
+                                                <td><?php echo $s['NUMERO']; ?></td>
+                                                <td><?php echo htmlspecialchars($s['ESTADO']); ?></td>
+                                                <td><?php echo $s['FECHA'] ? date('d/m/Y', strtotime($s['FECHA'])) : '-'; ?></td>
+                                                <td><?php echo htmlspecialchars($s['PROVEEDOR_CLIENTE'] ?: '-'); ?></td>
+                                                <td><?php echo $s['PESO_BRUTO'] !== null ? number_format($s['PESO_BRUTO'], 2) : '-'; ?></td>
+                                                <td><?php echo $s['TARA'] !== null ? number_format($s['TARA'], 2) : '-'; ?></td>
+                                                <td><?php echo $s['PESO_NETO'] !== null ? number_format($s['PESO_NETO'], 2) : '-'; ?></td>
+                                            </tr>
+                                        <?php endforeach; endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

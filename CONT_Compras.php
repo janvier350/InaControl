@@ -20,30 +20,38 @@ if(!isset($_SESSION["rol"])){
 }
 $rol_usuario = $_SESSION["rol"];
 
+$errorTablas = null;
 $secuenciasJs = [];
-$qSec = $conexion->query("SELECT ID_SECUENCIA, NUMERO FROM CONT_BASCULA_SECUENCIA WHERE ESTADO = 'PENDIENTE' ORDER BY NUMERO ASC");
-while ($s = mysqli_fetch_assoc($qSec)) {
-    $secuenciasJs[] = ['value' => $s['ID_SECUENCIA'], 'label' => $s['NUMERO']];
-}
-
 $pendientes = [];
-$qPend = $conexion->query("SELECT * FROM CONT_COMPRA_BOLETA WHERE ID_LIQUIDACION IS NULL AND ESTADO = 'A' ORDER BY PROVEEDOR, FECHA");
-while ($b = mysqli_fetch_assoc($qPend)) { $pendientes[] = $b; }
-
 $proveedoresJs = [];
-$qProv = $conexion->query("SELECT DISTINCT PROVEEDOR FROM CONT_COMPRA_BOLETA WHERE ID_LIQUIDACION IS NULL AND ESTADO = 'A' ORDER BY PROVEEDOR");
-while ($pv = mysqli_fetch_assoc($qProv)) { $proveedoresJs[] = $pv['PROVEEDOR']; }
-
 $anios = [];
-$qA = $conexion->query("SELECT DISTINCT YEAR(FECHA) AS ANIO FROM CONT_COMPRA_LIQUIDACION ORDER BY ANIO DESC");
-while ($a = mysqli_fetch_assoc($qA)) { $anios[] = $a['ANIO']; }
-if (empty($anios)) { $anios[] = (int)date('Y'); }
-
+$liquidaciones = null;
 $anioFiltro = isset($_GET['anio']) ? (int)$_GET['anio'] : (int)date('Y');
-$resLiq = $conexion->prepare("SELECT * FROM CONT_COMPRA_LIQUIDACION WHERE YEAR(FECHA) = ? AND ESTADO = 'A' ORDER BY FECHA DESC");
-$resLiq->bind_param("i", $anioFiltro);
-$resLiq->execute();
-$liquidaciones = $resLiq->get_result();
+
+try {
+    $qSec = $conexion->query("SELECT ID_SECUENCIA, NUMERO FROM CONT_BASCULA_SECUENCIA WHERE ESTADO = 'PENDIENTE' ORDER BY NUMERO ASC");
+    while ($s = mysqli_fetch_assoc($qSec)) {
+        $secuenciasJs[] = ['value' => $s['ID_SECUENCIA'], 'label' => $s['NUMERO']];
+    }
+
+    $qPend = $conexion->query("SELECT * FROM CONT_COMPRA_BOLETA WHERE ID_LIQUIDACION IS NULL AND ESTADO = 'A' ORDER BY PROVEEDOR, FECHA");
+    while ($b = mysqli_fetch_assoc($qPend)) { $pendientes[] = $b; }
+
+    $qProv = $conexion->query("SELECT DISTINCT PROVEEDOR FROM CONT_COMPRA_BOLETA WHERE ID_LIQUIDACION IS NULL AND ESTADO = 'A' ORDER BY PROVEEDOR");
+    while ($pv = mysqli_fetch_assoc($qProv)) { $proveedoresJs[] = $pv['PROVEEDOR']; }
+
+    $qA = $conexion->query("SELECT DISTINCT YEAR(FECHA) AS ANIO FROM CONT_COMPRA_LIQUIDACION ORDER BY ANIO DESC");
+    while ($a = mysqli_fetch_assoc($qA)) { $anios[] = $a['ANIO']; }
+    if (empty($anios)) { $anios[] = (int)date('Y'); }
+
+    $resLiq = $conexion->prepare("SELECT * FROM CONT_COMPRA_LIQUIDACION WHERE YEAR(FECHA) = ? AND ESTADO = 'A' ORDER BY FECHA DESC");
+    $resLiq->bind_param("i", $anioFiltro);
+    $resLiq->execute();
+    $liquidaciones = $resLiq->get_result();
+} catch (mysqli_sql_exception $e) {
+    $errorTablas = "No se pudieron cargar las tablas de Compras. Verifique que el script sql/CONTRALOR_COMPRAS.sql haya sido ejecutado en la base de datos.";
+    $anios = [(int)date('Y')];
+}
 ?>
 <head>
     <meta charset="utf-8">
@@ -96,6 +104,9 @@ $liquidaciones = $resLiq->get_result();
                 <?php if (isset($_GET['error'])): ?>
                     <div class="alert alert-danger alert-dismissible fade show">Error: <?php echo htmlspecialchars($_GET['error']); ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                <?php endif; ?>
+                <?php if ($errorTablas): ?>
+                    <div class="alert alert-danger"><?php echo htmlspecialchars($errorTablas); ?></div>
                 <?php endif; ?>
 
                 <ul class="nav nav-tabs" role="tablist">
@@ -243,7 +254,7 @@ $liquidaciones = $resLiq->get_result();
                                     <table class="table table-sm table-hover">
                                         <thead><tr><th>FECHA</th><th>PROVEEDOR</th><th>FACTURA</th><th>QQ TOTAL</th><th>PRECIO</th><th>TOTAL</th></tr></thead>
                                         <tbody>
-                                        <?php if (mysqli_num_rows($liquidaciones) === 0): ?>
+                                        <?php if (!$liquidaciones || mysqli_num_rows($liquidaciones) === 0): ?>
                                             <tr><td colspan="6" class="text-center text-muted">Sin liquidaciones para este año.</td></tr>
                                         <?php else: while ($l = mysqli_fetch_assoc($liquidaciones)): ?>
                                             <tr>
