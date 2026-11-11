@@ -54,6 +54,12 @@
                         Catálogo de Productos
                     </a>
                 </li>
+                <li>
+                    <a href="CONT_Bascula.php">
+                        <i class="metismenu-icon pe-7s-note2"></i>
+                        Secuencia de Báscula
+                    </a>
+                </li>
                 <li class="app-sidebar__heading">Sesión</li>
                 <li>
                     <a href="salir.php">
