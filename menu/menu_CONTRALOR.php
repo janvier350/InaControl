@@ -60,6 +60,12 @@
                         Secuencia de Báscula
                     </a>
                 </li>
+                <li>
+                    <a href="CONT_Compras.php">
+                        <i class="metismenu-icon pe-7s-car"></i>
+                        Compras
+                    </a>
+                </li>
                 <li class="app-sidebar__heading">Sesión</li>
                 <li>
                     <a href="salir.php">
