@@ -174,14 +174,10 @@ try {
                                 <?php if (empty($pendientes)): ?>
                                     <p class="text-muted">No hay boletas pendientes de liquidar.</p>
                                 <?php else: ?>
-                                    <div class="mb-3">
+                                    <div class="mb-3 position-relative">
                                         <label class="form-label">Filtrar por proveedor</label>
-                                        <select class="form-select" id="filtroProveedorLiq" onchange="filtrarProveedor()">
-                                            <option value="">-- Seleccione un proveedor --</option>
-                                            <?php foreach ($proveedoresJs as $pv): ?>
-                                                <option value="<?php echo htmlspecialchars($pv); ?>"><?php echo htmlspecialchars($pv); ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                        <input type="text" class="form-control" id="filtroProveedorLiq" placeholder="Escriba para buscar..." autocomplete="off">
+                                        <div id="listaProveedoresLiq" class="list-group shadow-sm" style="display:none; position:absolute; z-index:1060; width:100%; max-height:220px; overflow-y:auto;"></div>
                                     </div>
                                     <form method="POST" action="class/Insert_Liquidacion.php" onsubmit="return validarLiquidacion();">
                                         <input type="hidden" name="proveedor" id="liqProveedor">
@@ -330,8 +326,55 @@ function calcularBoleta() {
     document.getElementById('boletaQqNeto').value = qqNeto.toFixed(4);
 }
 
-function filtrarProveedor() {
-    var proveedor = document.getElementById('filtroProveedorLiq').value;
+var proveedoresLiq = <?php echo json_encode($proveedoresJs, JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+
+(function() {
+    var input = document.getElementById('filtroProveedorLiq');
+    if (!input) return;
+    var lista = document.getElementById('listaProveedoresLiq');
+
+    function renderResultados(texto) {
+        var t = texto.trim().toLowerCase();
+        var resultados = !t ? proveedoresLiq.slice(0, 20)
+            : proveedoresLiq.filter(function(p) { return p.toLowerCase().indexOf(t) !== -1; }).slice(0, 20);
+
+        lista.innerHTML = '';
+        if (!resultados.length) {
+            var vacio = document.createElement('div');
+            vacio.className = 'list-group-item text-muted small';
+            vacio.textContent = 'Sin resultados.';
+            lista.appendChild(vacio);
+        } else {
+            resultados.forEach(function(p) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action';
+                btn.dataset.value = p;
+                btn.textContent = p;
+                lista.appendChild(btn);
+            });
+        }
+        lista.style.display = 'block';
+    }
+
+    input.addEventListener('focus', function() { renderResultados(input.value); });
+    input.addEventListener('input', function() {
+        renderResultados(input.value);
+        filtrarProveedor('');
+    });
+    lista.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-value]');
+        if (!btn) return;
+        input.value = btn.dataset.value;
+        lista.style.display = 'none';
+        filtrarProveedor(btn.dataset.value);
+    });
+    document.addEventListener('click', function(e) {
+        if (e.target !== input && !lista.contains(e.target)) { lista.style.display = 'none'; }
+    });
+})();
+
+function filtrarProveedor(proveedor) {
     document.getElementById('liqProveedor').value = proveedor;
     document.querySelectorAll('.fila-pendiente').forEach(function(fila) {
         var coincide = proveedor && fila.dataset.proveedor === proveedor;
