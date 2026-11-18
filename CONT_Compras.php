@@ -109,15 +109,16 @@ try {
                     <div class="alert alert-danger"><?php echo htmlspecialchars($errorTablas); ?></div>
                 <?php endif; ?>
 
+                <?php $verLiquidaciones = isset($_GET['anio']); ?>
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-boleta">Registrar Boleta</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $verLiquidaciones ? '' : 'active'; ?>" data-bs-toggle="tab" href="#tab-boleta">Registrar Boleta</a></li>
                     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-liquidar">Liquidar Proveedor</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-liquidaciones">Liquidaciones</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $verLiquidaciones ? 'active' : ''; ?>" data-bs-toggle="tab" href="#tab-liquidaciones">Liquidaciones</a></li>
                 </ul>
                 <div class="tab-content pt-3">
 
                     <!-- Registrar Boleta -->
-                    <div class="tab-pane fade show active" id="tab-boleta">
+                    <div class="tab-pane fade <?php echo $verLiquidaciones ? '' : 'show active'; ?>" id="tab-boleta">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
                                 <form method="POST" action="class/Insert_Boleta.php">
@@ -234,7 +235,7 @@ try {
                     </div>
 
                     <!-- Liquidaciones -->
-                    <div class="tab-pane fade" id="tab-liquidaciones">
+                    <div class="tab-pane fade <?php echo $verLiquidaciones ? 'show active' : ''; ?>" id="tab-liquidaciones">
                         <div class="main-card mb-3 card">
                             <div class="card-body">
                                 <form method="GET" class="row g-2 mb-3">
