@@ -1033,6 +1033,10 @@ document.addEventListener('DOMContentLoaded', function() {
         events: <?php echo json_encode($eventos ?? []); ?>, // Usa array vacío si $eventos es null
 
         themeSystem: 'bootstrap5',
+        dateClick: function(info) {
+            document.getElementById('fechaSoporte').value = info.dateStr.substring(0, 10);
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        },
      eventClick: function(info) {
 
             // Convierte saltos de línea (reales o literales \r\n) en <br> para HTML
