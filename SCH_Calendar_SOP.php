@@ -667,6 +667,9 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="tab-entrega-link" data-bs-toggle="tab" href="#tab-entrega" role="tab">Equipo regresa de reparación</a>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="tab-historial-link" data-bs-toggle="tab" href="#tab-historial-mant" role="tab">Historial</a>
+                    </li>
                 </ul>
                 <div class="tab-content pt-3">
                     <!-- Registrar salida -->
@@ -739,6 +742,66 @@ $end = !empty($row['HORA_FIN']) ? $row['FECHA_SOPORTE'] . 'T' . $row['HORA_FIN']
                                 <button type="submit" class="btn btn-success">Registrar Entrega</button>
                             </div>
                         </form>
+                    </div>
+                    <!-- Historial -->
+                    <div class="tab-pane fade" id="tab-historial-mant" role="tabpanel">
+                        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                            <table class="table table-sm align-middle mb-0 bg-white">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>EQUIPO</th>
+                                        <th>SERIE</th>
+                                        <th>SALIDA</th>
+                                        <th>DAÑO</th>
+                                        <th>ENTREGA</th>
+                                        <th>SOLUCIÓN</th>
+                                        <th>ESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $sqlMantCal = "SELECT M.FECHA_SALIDA, M.DANIO_REPORTADO, M.FECHA_ENTREGA, M.SOLUCION_APLICADA, M.ESTADO,
+                                                           E.MARCA, E.MODELO, E.SERIAL
+                                                    FROM INV_MANTENIMIENTOS M
+                                                    INNER JOIN INV_EQUIPO E ON M.ID_EQUIPO = E.ID_EQUIPO
+                                                    ORDER BY M.FECHA_SALIDA DESC";
+                                    $errorMantCal = null;
+                                    $queryMantCal = null;
+                                    try {
+                                        $queryMantCal = $conexion->query($sqlMantCal);
+                                    } catch (\mysqli_sql_exception $e) {
+                                        $errorMantCal = $e->getMessage();
+                                    }
+                                    if ($errorMantCal) {
+                                        echo "<tr><td colspan='7' class='text-center text-danger'>Error al cargar el historial: " . htmlspecialchars($errorMantCal) . "</td></tr>";
+                                    } elseif ($queryMantCal && $queryMantCal->num_rows > 0) {
+                                        while ($mantCal = mysqli_fetch_array($queryMantCal)) {
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($mantCal['MARCA'].' '.$mantCal['MODELO']); ?></td>
+                                        <td><?php echo htmlspecialchars($mantCal['SERIAL']); ?></td>
+                                        <td><?php echo htmlspecialchars($mantCal['FECHA_SALIDA']); ?></td>
+                                        <td><?php echo textoConSaltos($mantCal['DANIO_REPORTADO']); ?></td>
+                                        <td><?php echo htmlspecialchars($mantCal['FECHA_ENTREGA'] ?? '-'); ?></td>
+                                        <td><?php echo $mantCal['SOLUCION_APLICADA'] ? textoConSaltos($mantCal['SOLUCION_APLICADA']) : '-'; ?></td>
+                                        <td>
+                                            <?php if ($mantCal['ESTADO'] === 'En Reparacion') { ?>
+                                                <span class="badge bg-warning text-dark">En Reparación</span>
+                                            <?php } else { ?>
+                                                <span class="badge bg-success">Completado</span>
+                                            <?php } ?>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='7' class='text-center'>No hay mantenimientos registrados</td></tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">Para editar un mantenimiento o agregar más evidencias, ve a Inventario de Equipos → Historial Mantenimientos.</p>
                     </div>
                 </div>
             </div>
