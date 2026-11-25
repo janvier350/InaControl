@@ -6,6 +6,20 @@ require_once("class/conexionBD.php");
  $conexion = conectarse("utf8");
  $conexion->set_charset("utf8");
 
+if (!function_exists('limpiarSaltos')) {
+    function limpiarSaltos($texto) {
+        if ($texto === null || $texto === '') { return ''; }
+        $texto = str_replace(['\\r\\n', '\\n', '\\r'], "\n", $texto);
+        $texto = preg_replace('/\\\\\s*(\r\n|\r|\n)/', "\n", $texto);
+        return rtrim($texto, "\\ \t\n\r\0\x0B");
+    }
+}
+if (!function_exists('textoConSaltos')) {
+    function textoConSaltos($texto) {
+        return nl2br(htmlspecialchars(limpiarSaltos($texto)));
+    }
+}
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
