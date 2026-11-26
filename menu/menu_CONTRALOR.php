@@ -32,36 +32,37 @@
     <style>
         .app-sidebar .scrollbar-sidebar { overflow-y: auto !important; max-height: calc(100vh - 60px) !important; }
     </style>
+    <?php $paginaActual = basename($_SERVER['PHP_SELF']); ?>
     <div class="scrollbar-sidebar">
         <div class="app-sidebar__inner">
             <ul class="vertical-nav-menu">
                 <li class="app-sidebar__heading">Contraloría</li>
                 <li>
-                    <a href="CONT_Estadisticas.php" class="mm-active">
+                    <a href="CONT_Estadisticas.php" class="<?php echo $paginaActual === 'CONT_Estadisticas.php' ? 'mm-active' : ''; ?>">
                         <i class="metismenu-icon pe-7s-graph3"></i>
                         Estadísticas de Ventas
                     </a>
                 </li>
                 <li>
-                    <a href="CONT_Ventas.php">
+                    <a href="CONT_Ventas.php" class="<?php echo $paginaActual === 'CONT_Ventas.php' ? 'mm-active' : ''; ?>">
                         <i class="metismenu-icon pe-7s-cash"></i>
                         Ventas
                     </a>
                 </li>
                 <li>
-                    <a href="CONT_Productos.php">
+                    <a href="CONT_Productos.php" class="<?php echo $paginaActual === 'CONT_Productos.php' ? 'mm-active' : ''; ?>">
                         <i class="metismenu-icon pe-7s-box1"></i>
                         Catálogo de Productos
                     </a>
                 </li>
                 <li>
-                    <a href="CONT_Bascula.php">
+                    <a href="CONT_Bascula.php" class="<?php echo $paginaActual === 'CONT_Bascula.php' ? 'mm-active' : ''; ?>">
                         <i class="metismenu-icon pe-7s-note2"></i>
                         Secuencia de Báscula
                     </a>
                 </li>
                 <li>
-                    <a href="CONT_Compras.php">
+                    <a href="CONT_Compras.php" class="<?php echo $paginaActual === 'CONT_Compras.php' ? 'mm-active' : ''; ?>">
                         <i class="metismenu-icon pe-7s-car"></i>
                         Compras
                     </a>
