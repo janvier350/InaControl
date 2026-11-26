@@ -36,6 +36,20 @@ while ($c = mysqli_fetch_assoc($qc)) {
         $independientes[] = $c;
     }
 }
+
+$totalCamarasMapa = array_sum(array_map(fn($d) => count($d['CAMARAS']), $dvrs)) + count($independientes);
+
+$elaboradoPor = $_SESSION["username"];
+if (!empty($_SESSION['iduser'])) {
+    $stmtU = $conexion->prepare("SELECT NOMBRES, APELLIDOS FROM ADM_USUARIO WHERE IDADM_USUARIO = ?");
+    $stmtU->bind_param("i", $_SESSION['iduser']);
+    $stmtU->execute();
+    $rowU = $stmtU->get_result()->fetch_assoc();
+    $stmtU->close();
+    if ($rowU) {
+        $elaboradoPor = trim($rowU['NOMBRES'] . ' ' . $rowU['APELLIDOS']);
+    }
+}
 ?>
 <head>
     <meta charset="utf-8">
@@ -53,6 +67,12 @@ while ($c = mysqli_fetch_assoc($qc)) {
             border: 1px solid #eee; border-radius: 8px; margin-bottom: 6px; background: #fafbfc;
         }
         .cam-dot { width: 10px; height: 10px; border-radius: 50%; background: #3ac47d; flex-shrink: 0; }
+        @media print {
+            .no-print, .app-sidebar, .app-header, .app-page-title { display: none !important; }
+            .app-main__outer { padding-left: 0 !important; }
+            .print-header { display: block !important; }
+            body { background: #fff !important; }
+        }
     </style>
 </head>
 <body>
@@ -93,8 +113,42 @@ while ($c = mysqli_fetch_assoc($qc)) {
                                 <div class="page-title-subheading text-black">Mapa de Conexiones CCTV</div>
                                 <p class="text-dark">Qué cámaras están conectadas a cada DVR/NVR y en qué área.</p>
                             </div>
+                            <div class="ms-auto d-flex gap-1 no-print">
+                                <a class="btn btn-success" href="class/CCTV_Export_Mapa.php" title="Exportar Excel">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" onclick="window.print()" title="Exportar PDF">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="print-header mb-3" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2" style="border-bottom:3px solid #0f3460; padding-bottom:8px;">
+                        <div>
+                            <h4 class="mb-0">INASAR</h4>
+                            <small class="text-muted">Mapa de Conexiones CCTV (DVR/NVR y cámaras conectadas)</small>
+                        </div>
+                        <div class="text-end small">
+                            <strong>Fecha de emisión:</strong> <?php echo date('d/m/Y H:i'); ?>
+                        </div>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; font-size:0.85rem; margin-bottom:10px;">
+                        <tr>
+                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold; width:20%;">Elaborado por:</td>
+                            <td style="border:1px solid #000; padding:4px 8px; width:30%;"><?php echo htmlspecialchars($elaboradoPor); ?></td>
+                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold; width:20%;">Total de cámaras:</td>
+                            <td style="border:1px solid #000; padding:4px 8px; width:30%;"><?php echo $totalCamarasMapa; ?></td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold;">Departamento:</td>
+                            <td style="border:1px solid #000; padding:4px 8px;">Sistemas / Soporte Técnico</td>
+                            <td style="border:1px solid #000; padding:4px 8px; font-weight:bold;">Documento:</td>
+                            <td style="border:1px solid #000; padding:4px 8px;">Mapa de Conexiones CCTV</td>
+                        </tr>
+                    </table>
                 </div>
 
                 <div class="row g-3 align-items-start">
@@ -167,9 +221,18 @@ while ($c = mysqli_fetch_assoc($qc)) {
                     <?php endif; ?>
                 </div>
             </div>
+            <div class="app-wrapper-footer">
+                <div class="app-footer">
+                    <div class="app-footer__inner">
+
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<script src="js/jquery.min.js"></script>
+<script type="text/javascript" src="./assets/scripts/main.js"></script>
 </body>
 </html>
 <?php ob_end_flush(); ?>
