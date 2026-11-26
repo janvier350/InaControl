@@ -4,19 +4,29 @@ require_once("conexionBD.php");
 $conexion = conectarse();
 session_start();
 
-$nombre = mysqli_real_escape_string($conexion, trim($_POST['nombre'] ?? ''));
+$nombre = trim($_POST['nombre'] ?? '');
+$destino = ($_POST['origen'] ?? '') === 'ventas' ? '../CONT_Ventas.php' : '../CONT_Clientes.php';
 
 if ($nombre === '') {
-    header("Location: ../CONT_Clientes.php?error=" . urlencode("El nombre es obligatorio."));
+    header("Location: $destino?error=" . urlencode("El nombre es obligatorio."));
     exit();
 }
 
-$sql = "INSERT INTO CONT_CLIENTE (NOMBRE) VALUES ('$nombre')";
+$stmtChk = mysqli_prepare($conexion, "SELECT ID_CLIENTE FROM CONT_CLIENTE WHERE NOMBRE = ?");
+mysqli_stmt_bind_param($stmtChk, "s", $nombre);
+mysqli_stmt_execute($stmtChk);
+if (mysqli_stmt_get_result($stmtChk)->fetch_assoc()) {
+    header("Location: $destino?success=1&clienteNuevo=" . urlencode($nombre));
+    exit();
+}
 
-if ($conexion->query($sql) === TRUE) {
-    header("Location: ../CONT_Clientes.php?success=1");
+$stmtIns = mysqli_prepare($conexion, "INSERT INTO CONT_CLIENTE (NOMBRE) VALUES (?)");
+mysqli_stmt_bind_param($stmtIns, "s", $nombre);
+
+if (mysqli_stmt_execute($stmtIns)) {
+    header("Location: $destino?success=1&clienteNuevo=" . urlencode($nombre));
 } else {
-    header("Location: ../CONT_Clientes.php?error=" . urlencode($conexion->error));
+    header("Location: $destino?error=" . urlencode($conexion->error));
 }
 $conexion->close();
 ?>

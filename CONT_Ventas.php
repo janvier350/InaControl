@@ -278,6 +278,25 @@ while ($c = mysqli_fetch_assoc($qCli)) {
     </div>
 </div>
 
+<!-- Modal Nuevo Cliente (rápido, desde Ventas) -->
+<div class="modal fade" id="modalNuevoClienteVenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Nuevo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <form method="POST" action="class/Insert_Cliente.php">
+                    <input type="hidden" name="origen" value="ventas">
+                    <div class="mb-2">
+                        <label class="form-label">Nombre del cliente</label>
+                        <input class="form-control" name="nombre" id="nuevoClienteNombre" required>
+                    </div>
+                    <div class="text-end"><button type="submit" class="btn btn-success">Guardar</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 var productosVenta = <?php echo json_encode($productosJs, JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 var clientesVenta = <?php echo json_encode($clientesJs, JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
@@ -295,7 +314,7 @@ var clientesVenta = <?php echo json_encode($clientesJs, JSON_HEX_APOS | JSON_HEX
         if (!resultados.length) {
             var vacio = document.createElement('div');
             vacio.className = 'list-group-item text-muted small';
-            vacio.textContent = 'Sin resultados. Se registrará como cliente nuevo.';
+            vacio.textContent = 'Sin resultados.';
             lista.appendChild(vacio);
         } else {
             resultados.forEach(function(c) {
@@ -307,12 +326,25 @@ var clientesVenta = <?php echo json_encode($clientesJs, JSON_HEX_APOS | JSON_HEX
                 lista.appendChild(btn);
             });
         }
+        var btnNuevo = document.createElement('button');
+        btnNuevo.type = 'button';
+        btnNuevo.className = 'list-group-item list-group-item-action text-success fw-bold';
+        btnNuevo.innerHTML = '<i class="bi bi-plus-lg"></i> Agregar cliente nuevo' + (t ? ': "' + t + '"' : '');
+        btnNuevo.dataset.nuevo = '1';
+        lista.appendChild(btnNuevo);
         lista.style.display = 'block';
     }
 
     input.addEventListener('focus', function() { renderResultados(input.value); });
     input.addEventListener('input', function() { renderResultados(input.value); });
     lista.addEventListener('click', function(e) {
+        var btnN = e.target.closest('[data-nuevo]');
+        if (btnN) {
+            document.getElementById('nuevoClienteNombre').value = input.value.trim();
+            lista.style.display = 'none';
+            new bootstrap.Modal(document.getElementById('modalNuevoClienteVenta')).show();
+            return;
+        }
         var btn = e.target.closest('[data-value]');
         if (!btn) return;
         input.value = btn.dataset.value;
@@ -364,6 +396,10 @@ var clientesVenta = <?php echo json_encode($clientesJs, JSON_HEX_APOS | JSON_HEX
     });
 
     document.getElementById('ventaFecha').value = new Date().toISOString().substring(0, 10);
+
+    <?php if (!empty($_GET['clienteNuevo'])): ?>
+    document.getElementById('buscarClienteVenta').value = <?php echo json_encode($_GET['clienteNuevo']); ?>;
+    <?php endif; ?>
 })();
 
 function calcularTotalVenta() {
