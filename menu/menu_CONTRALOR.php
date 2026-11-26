@@ -56,6 +56,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="CONT_Clientes.php" class="<?php echo $paginaActual === 'CONT_Clientes.php' ? 'mm-active' : ''; ?>">
+                        <i class="metismenu-icon pe-7s-users"></i>
+                        Catálogo de Clientes
+                    </a>
+                </li>
+                <li>
                     <a href="CONT_Bascula.php" class="<?php echo $paginaActual === 'CONT_Bascula.php' ? 'mm-active' : ''; ?>">
                         <i class="metismenu-icon pe-7s-note2"></i>
                         Secuencia de Báscula
