@@ -26,6 +26,12 @@ while ($p = mysqli_fetch_assoc($qProd)) {
     $label = $p['CODIGO'] ? $p['NOMBRE'] . ' (' . $p['CODIGO'] . ')' : $p['NOMBRE'];
     $productosJs[] = ['value' => $p['ID_PRODUCTO'], 'label' => $label];
 }
+
+$clientesJs = [];
+$qCli = $conexion->query("SELECT NOMBRE FROM CONT_CLIENTE WHERE ESTADO = 'A' ORDER BY NOMBRE");
+while ($c = mysqli_fetch_assoc($qCli)) {
+    $clientesJs[] = $c['NOMBRE'];
+}
 ?>
 <head>
     <meta charset="utf-8">
@@ -105,9 +111,14 @@ while ($p = mysqli_fetch_assoc($qProd)) {
                                                 <option value="SIN_FACTURA">Sin factura</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-3 mb-3 position-relative">
                                             <label class="form-label">Cliente</label>
-                                            <input type="text" class="form-control" name="cliente">
+                                            <input type="text" class="form-control" name="cliente" id="buscarClienteVenta" placeholder="Escriba para buscar o agregar..." autocomplete="off">
+                                            <div id="listaClientesVenta" class="list-group shadow-sm" style="display:none; position:absolute; z-index:1060; width:100%; max-height:220px; overflow-y:auto;"></div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">N° Factura <span class="text-muted small">(solo secuencial)</span></label>
+                                            <input type="text" class="form-control" name="facturaNo" placeholder="Ej. 001234">
                                         </div>
                                     </div>
                                     <div class="row position-relative">
@@ -129,6 +140,13 @@ while ($p = mysqli_fetch_assoc($qProd)) {
                                             <label class="form-label">Total</label>
                                             <input type="text" class="form-control" id="ventaTotalDisplay" readonly>
                                         </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalRetencion" onclick="abrirModalRetencion()">
+                                            <i class="bi bi-receipt-cutoff"></i> Calcular Retención
+                                        </button>
+                                        <span id="retencionResumen" class="small text-muted ms-2"></span>
+                                        <input type="hidden" name="porcRetencion" id="ventaPorcRetencion" value="0">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Observación</label>
@@ -196,19 +214,22 @@ while ($p = mysqli_fetch_assoc($qProd)) {
                                 </form>
                                 <div class="table-responsive">
                                     <table class="table table-sm table-hover">
-                                        <thead><tr><th>FECHA</th><th>PRODUCTO</th><th>CLIENTE</th><th>TIPO</th><th>QQ</th><th>PRECIO</th><th>TOTAL</th></tr></thead>
+                                        <thead><tr><th>FECHA</th><th>PRODUCTO</th><th>CLIENTE</th><th>N° FACTURA</th><th>TIPO</th><th>QQ</th><th>PRECIO</th><th>TOTAL</th><th>RETENCIÓN</th><th>A COBRAR</th></tr></thead>
                                         <tbody>
                                         <?php if (mysqli_num_rows($resV) === 0): ?>
-                                            <tr><td colspan="7" class="text-center text-muted">Sin ventas en este filtro.</td></tr>
+                                            <tr><td colspan="10" class="text-center text-muted">Sin ventas en este filtro.</td></tr>
                                         <?php else: while ($v = mysqli_fetch_assoc($resV)): ?>
                                             <tr>
                                                 <td><?php echo date('d/m/Y', strtotime($v['FECHA'])); ?></td>
                                                 <td><?php echo htmlspecialchars($v['PRODUCTO_NOMBRE']); ?></td>
                                                 <td><?php echo htmlspecialchars($v['CLIENTE'] ?: '-'); ?></td>
+                                                <td><?php echo htmlspecialchars($v['FACTURA_NO'] ?: '-'); ?></td>
                                                 <td><span class="badge <?php echo $v['TIPO'] === 'CON_FACTURA' ? 'bg-success' : 'bg-secondary'; ?>"><?php echo $v['TIPO'] === 'CON_FACTURA' ? 'Con Factura' : 'Sin Factura'; ?></span></td>
                                                 <td><?php echo number_format($v['QQ'], 2); ?></td>
                                                 <td>$<?php echo number_format($v['PRECIO'], 4); ?></td>
                                                 <td>$<?php echo number_format($v['TOTAL'], 2); ?></td>
+                                                <td><?php echo $v['VALOR_RETENCION'] > 0 ? '$'.number_format($v['VALOR_RETENCION'], 2).' ('.number_format($v['PORC_RETENCION']*100, 2).'%)' : '-'; ?></td>
+                                                <td>$<?php echo number_format($v['TOTAL_A_COBRAR'] ?? $v['TOTAL'], 2); ?></td>
                                             </tr>
                                         <?php endwhile; endif; ?>
                                         </tbody>
@@ -223,8 +244,84 @@ while ($p = mysqli_fetch_assoc($qProd)) {
     </div>
 </div>
 
+<!-- Modal Retención -->
+<div class="modal fade" id="modalRetencion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Calcular Retención</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label">Base (Total de la venta)</label>
+                    <input type="text" class="form-control" id="retBase" readonly>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">% Retención</label>
+                    <select class="form-select" id="retPorcentaje" onchange="calcularRetencion()">
+                        <option value="0">0% (Nota de Venta)</option>
+                        <option value="0.01">1%</option>
+                        <option value="0.0175">1.75%</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Valor Retención</label>
+                    <input type="text" class="form-control" id="retValor" readonly>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Valor a Cobrar</label>
+                    <input type="text" class="form-control" id="retACobrar" readonly>
+                </div>
+                <div class="text-end">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="aplicarRetencion()">Aplicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 var productosVenta = <?php echo json_encode($productosJs, JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+var clientesVenta = <?php echo json_encode($clientesJs, JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+
+(function() {
+    var input = document.getElementById('buscarClienteVenta');
+    var lista = document.getElementById('listaClientesVenta');
+
+    function renderResultados(texto) {
+        var t = texto.trim().toLowerCase();
+        var resultados = !t ? clientesVenta.slice(0, 20)
+            : clientesVenta.filter(function(c) { return c.toLowerCase().indexOf(t) !== -1; }).slice(0, 20);
+
+        lista.innerHTML = '';
+        if (!resultados.length) {
+            var vacio = document.createElement('div');
+            vacio.className = 'list-group-item text-muted small';
+            vacio.textContent = 'Sin resultados. Se registrará como cliente nuevo.';
+            lista.appendChild(vacio);
+        } else {
+            resultados.forEach(function(c) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action';
+                btn.dataset.value = c;
+                btn.textContent = c;
+                lista.appendChild(btn);
+            });
+        }
+        lista.style.display = 'block';
+    }
+
+    input.addEventListener('focus', function() { renderResultados(input.value); });
+    input.addEventListener('input', function() { renderResultados(input.value); });
+    lista.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-value]');
+        if (!btn) return;
+        input.value = btn.dataset.value;
+        lista.style.display = 'none';
+    });
+    document.addEventListener('click', function(e) {
+        if (e.target !== input && !lista.contains(e.target)) { lista.style.display = 'none'; }
+    });
+})();
 
 (function() {
     var input = document.getElementById('buscarProductoVenta');
@@ -273,6 +370,32 @@ function calcularTotalVenta() {
     var qq = parseFloat(document.getElementById('ventaQQ').value) || 0;
     var precio = parseFloat(document.getElementById('ventaPrecio').value) || 0;
     document.getElementById('ventaTotalDisplay').value = '$' + (qq * precio).toFixed(2);
+}
+
+function abrirModalRetencion() {
+    var qq = parseFloat(document.getElementById('ventaQQ').value) || 0;
+    var precio = parseFloat(document.getElementById('ventaPrecio').value) || 0;
+    var base = qq * precio;
+    document.getElementById('retBase').value = '$' + base.toFixed(2);
+    document.getElementById('retPorcentaje').value = document.getElementById('ventaPorcRetencion').value || '0';
+    calcularRetencion();
+}
+
+function calcularRetencion() {
+    var qq = parseFloat(document.getElementById('ventaQQ').value) || 0;
+    var precio = parseFloat(document.getElementById('ventaPrecio').value) || 0;
+    var base = qq * precio;
+    var porc = parseFloat(document.getElementById('retPorcentaje').value) || 0;
+    var valorRet = base * porc;
+    document.getElementById('retValor').value = '$' + valorRet.toFixed(2);
+    document.getElementById('retACobrar').value = '$' + (base - valorRet).toFixed(2);
+}
+
+function aplicarRetencion() {
+    var porc = document.getElementById('retPorcentaje').value;
+    document.getElementById('ventaPorcRetencion').value = porc;
+    var texto = porc == 0 ? 'Sin retención' : (parseFloat(porc) * 100).toFixed(2) + '% de retención aplicada';
+    document.getElementById('retencionResumen').textContent = texto + ' — Valor a cobrar: ' + document.getElementById('retACobrar').value;
 }
 
 function validarVenta() {
