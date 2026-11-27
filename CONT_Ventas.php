@@ -88,7 +88,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
 
-                <?php $verListado = isset($_GET['anio']) || isset($_GET['mes']) || isset($_GET['tipo']); ?>
+                <?php $verListado = isset($_GET['anio']) || isset($_GET['mes']) || isset($_GET['tipo']) || isset($_GET['semestre']); ?>
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item"><a class="nav-link <?php echo $verListado ? '' : 'active'; ?>" data-bs-toggle="tab" href="#tab-registrar">Registrar</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $verListado ? 'active' : ''; ?>" data-bs-toggle="tab" href="#tab-listado">Listado</a></li>
@@ -171,6 +171,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
 
                                 $anioFiltro = isset($_GET['anio']) ? (int)$_GET['anio'] : (int)date('Y');
                                 $mesFiltro = isset($_GET['mes']) ? (int)$_GET['mes'] : 0;
+                                $semestreFiltro = isset($_GET['semestre']) ? (int)$_GET['semestre'] : 0;
                                 $tipoFiltro = $_GET['tipo'] ?? '';
 
                                 $sqlV = "SELECT V.*, P.NOMBRE AS PRODUCTO_NOMBRE, P.CODIGO AS PRODUCTO_CODIGO
@@ -178,6 +179,8 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                          WHERE V.ESTADO = 'A' AND YEAR(V.FECHA) = ?";
                                 $types = "i"; $params = [$anioFiltro];
                                 if ($mesFiltro) { $sqlV .= " AND MONTH(V.FECHA) = ?"; $types .= "i"; $params[] = $mesFiltro; }
+                                if ($semestreFiltro === 1) { $sqlV .= " AND MONTH(V.FECHA) BETWEEN 1 AND 6"; }
+                                if ($semestreFiltro === 2) { $sqlV .= " AND MONTH(V.FECHA) BETWEEN 7 AND 12"; }
                                 if ($tipoFiltro) { $sqlV .= " AND V.TIPO = ?"; $types .= "s"; $params[] = $tipoFiltro; }
                                 $sqlV .= " ORDER BY V.FECHA DESC";
 
@@ -185,7 +188,43 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                 mysqli_stmt_bind_param($stmtV, $types, ...$params);
                                 mysqli_stmt_execute($stmtV);
                                 $resV = mysqli_stmt_get_result($stmtV);
+
+                                $filasVenta = [];
+                                $sumQQ = 0; $sumTotal = 0; $sumRetencion = 0; $sumACobrar = 0;
+                                while ($v = mysqli_fetch_assoc($resV)) {
+                                    $filasVenta[] = $v;
+                                    $sumQQ += $v['QQ'];
+                                    $sumTotal += $v['TOTAL'];
+                                    $sumRetencion += $v['VALOR_RETENCION'];
+                                    $sumACobrar += $v['TOTAL_A_COBRAR'] ?? $v['TOTAL'];
+                                }
                                 ?>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-3">
+                                        <div class="card text-center shadow-sm"><div class="card-body py-2">
+                                            <div class="small text-muted">Quintales (QQ)</div>
+                                            <div class="h5 mb-0"><?php echo number_format($sumQQ, 2); ?></div>
+                                        </div></div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center shadow-sm"><div class="card-body py-2">
+                                            <div class="small text-muted">Total Vendido</div>
+                                            <div class="h5 mb-0">$<?php echo number_format($sumTotal, 2); ?></div>
+                                        </div></div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center shadow-sm"><div class="card-body py-2">
+                                            <div class="small text-muted">Retención</div>
+                                            <div class="h5 mb-0">$<?php echo number_format($sumRetencion, 2); ?></div>
+                                        </div></div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center shadow-sm"><div class="card-body py-2">
+                                            <div class="small text-muted">Total a Cobrar</div>
+                                            <div class="h5 mb-0">$<?php echo number_format($sumACobrar, 2); ?></div>
+                                        </div></div>
+                                    </div>
+                                </div>
                                 <form method="GET" class="row g-2 mb-3">
                                     <div class="col-md-3">
                                         <select class="form-select" name="anio" onchange="this.form.submit()">
@@ -205,6 +244,13 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                         </select>
                                     </div>
                                     <div class="col-md-3">
+                                        <select class="form-select" name="semestre" onchange="this.form.submit()">
+                                            <option value="0">Todo el año</option>
+                                            <option value="1" <?php echo $semestreFiltro === 1 ? 'selected' : ''; ?>>1er Semestre</option>
+                                            <option value="2" <?php echo $semestreFiltro === 2 ? 'selected' : ''; ?>>2do Semestre</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
                                         <select class="form-select" name="tipo" onchange="this.form.submit()">
                                             <option value="">Todos los tipos</option>
                                             <option value="CON_FACTURA" <?php echo $tipoFiltro === 'CON_FACTURA' ? 'selected' : ''; ?>>Con factura</option>
@@ -216,9 +262,9 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                     <table class="table table-sm table-hover">
                                         <thead><tr><th>FECHA</th><th>PRODUCTO</th><th>CLIENTE</th><th>N° FACTURA</th><th>TIPO</th><th>QQ</th><th>PRECIO</th><th>TOTAL</th><th>RETENCIÓN</th><th>A COBRAR</th></tr></thead>
                                         <tbody>
-                                        <?php if (mysqli_num_rows($resV) === 0): ?>
+                                        <?php if (empty($filasVenta)): ?>
                                             <tr><td colspan="10" class="text-center text-muted">Sin ventas en este filtro.</td></tr>
-                                        <?php else: while ($v = mysqli_fetch_assoc($resV)): ?>
+                                        <?php else: foreach ($filasVenta as $v): ?>
                                             <tr>
                                                 <td><?php echo date('d/m/Y', strtotime($v['FECHA'])); ?></td>
                                                 <td><?php echo htmlspecialchars($v['PRODUCTO_NOMBRE']); ?></td>
@@ -231,7 +277,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                                 <td><?php echo $v['VALOR_RETENCION'] > 0 ? '$'.number_format($v['VALOR_RETENCION'], 2).' ('.number_format($v['PORC_RETENCION']*100, 2).'%)' : '-'; ?></td>
                                                 <td>$<?php echo number_format($v['TOTAL_A_COBRAR'] ?? $v['TOTAL'], 2); ?></td>
                                             </tr>
-                                        <?php endwhile; endif; ?>
+                                        <?php endforeach; endif; ?>
                                         </tbody>
                                     </table>
                                 </div>
