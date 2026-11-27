@@ -198,6 +198,37 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                     $sumRetencion += $v['VALOR_RETENCION'];
                                     $sumACobrar += $v['TOTAL_A_COBRAR'] ?? $v['TOTAL'];
                                 }
+
+                                $pagosPorVenta = [];
+                                if (!empty($filasVenta)) {
+                                    $idsVenta = array_map(fn($v) => (int)$v['ID_VENTA'], $filasVenta);
+                                    $placeholders = implode(',', array_fill(0, count($idsVenta), '?'));
+                                    $typesPagos = str_repeat('i', count($idsVenta));
+                                    $stmtPagos = mysqli_prepare($conexion, "SELECT * FROM CONT_VENTA_PAGO WHERE ID_VENTA IN ($placeholders) ORDER BY FECHA_PAGO ASC");
+                                    mysqli_stmt_bind_param($stmtPagos, $typesPagos, ...$idsVenta);
+                                    mysqli_stmt_execute($stmtPagos);
+                                    $resPagos = mysqli_stmt_get_result($stmtPagos);
+                                    while ($p = mysqli_fetch_assoc($resPagos)) {
+                                        $pagosPorVenta[$p['ID_VENTA']][] = $p;
+                                    }
+                                }
+
+                                foreach ($filasVenta as &$v) {
+                                    $aCobrar = $v['TOTAL_A_COBRAR'] ?? $v['TOTAL'];
+                                    $pagos = $pagosPorVenta[$v['ID_VENTA']] ?? [];
+                                    $pagado = array_sum(array_column($pagos, 'MONTO'));
+                                    $v['PAGOS'] = $pagos;
+                                    $v['TOTAL_PAGADO'] = $pagado;
+                                    $v['SALDO_PENDIENTE'] = round($aCobrar - $pagado, 2);
+                                    if ($pagado <= 0) {
+                                        $v['ESTADO_PAGO'] = 'PENDIENTE';
+                                    } elseif ($v['SALDO_PENDIENTE'] > 0.009) {
+                                        $v['ESTADO_PAGO'] = 'PARCIAL';
+                                    } else {
+                                        $v['ESTADO_PAGO'] = 'PAGADO';
+                                    }
+                                }
+                                unset($v);
                                 ?>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-3">
@@ -260,11 +291,14 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                 </form>
                                 <div class="table-responsive">
                                     <table class="table table-sm table-hover">
-                                        <thead><tr><th>FECHA</th><th>PRODUCTO</th><th>CLIENTE</th><th>N° FACTURA</th><th>TIPO</th><th>QQ</th><th>PRECIO</th><th>TOTAL</th><th>RETENCIÓN</th><th>A COBRAR</th></tr></thead>
+                                        <thead><tr><th>FECHA</th><th>PRODUCTO</th><th>CLIENTE</th><th>N° FACTURA</th><th>TIPO</th><th>QQ</th><th>PRECIO</th><th>TOTAL</th><th>RETENCIÓN</th><th>A COBRAR</th><th>PAGO</th><th>ACCIONES</th></tr></thead>
                                         <tbody>
                                         <?php if (empty($filasVenta)): ?>
-                                            <tr><td colspan="10" class="text-center text-muted">Sin ventas en este filtro.</td></tr>
-                                        <?php else: foreach ($filasVenta as $v): ?>
+                                            <tr><td colspan="12" class="text-center text-muted">Sin ventas en este filtro.</td></tr>
+                                        <?php else: foreach ($filasVenta as $v):
+                                            $badgePago = ['PENDIENTE' => 'bg-secondary', 'PARCIAL' => 'bg-warning text-dark', 'PAGADO' => 'bg-success'][$v['ESTADO_PAGO']];
+                                            $labelPago = ['PENDIENTE' => 'Pendiente', 'PARCIAL' => 'Parcial', 'PAGADO' => 'Pagado'][$v['ESTADO_PAGO']];
+                                        ?>
                                             <tr>
                                                 <td><?php echo date('d/m/Y', strtotime($v['FECHA'])); ?></td>
                                                 <td><?php echo htmlspecialchars($v['PRODUCTO_NOMBRE']); ?></td>
@@ -276,6 +310,21 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                                 <td>$<?php echo number_format($v['TOTAL'], 2); ?></td>
                                                 <td><?php echo $v['VALOR_RETENCION'] > 0 ? '$'.number_format($v['VALOR_RETENCION'], 2).' ('.number_format($v['PORC_RETENCION']*100, 2).'%)' : '-'; ?></td>
                                                 <td>$<?php echo number_format($v['TOTAL_A_COBRAR'] ?? $v['TOTAL'], 2); ?></td>
+                                                <td><span class="badge <?php echo $badgePago; ?>"><?php echo $labelPago; ?></span></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalPagoVenta"
+                                                        onclick='abrirModalPago(<?php echo json_encode([
+                                                            "ID_VENTA" => $v["ID_VENTA"],
+                                                            "PRODUCTO" => $v["PRODUCTO_NOMBRE"],
+                                                            "CLIENTE" => $v["CLIENTE"],
+                                                            "TOTAL_A_COBRAR" => $v["TOTAL_A_COBRAR"] ?? $v["TOTAL"],
+                                                            "TOTAL_PAGADO" => $v["TOTAL_PAGADO"],
+                                                            "SALDO_PENDIENTE" => $v["SALDO_PENDIENTE"],
+                                                            "PAGOS" => $v["PAGOS"],
+                                                        ], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
+                                                        <i class="bi bi-cash-coin"></i>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         <?php endforeach; endif; ?>
                                         </tbody>
@@ -337,6 +386,56 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                         <input class="form-control" name="nombre" id="nuevoClienteNombre" required>
                     </div>
                     <div class="text-end"><button type="submit" class="btn btn-success">Guardar</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registrar Pago -->
+<div class="modal fade" id="modalPagoVenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Registrar Pago</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="mb-1"><strong id="pagoProducto"></strong> — <span id="pagoCliente" class="text-muted"></span></p>
+                <div class="row text-center mb-3">
+                    <div class="col-4"><div class="small text-muted">Total a Cobrar</div><div class="fw-bold" id="pagoTotalACobrar"></div></div>
+                    <div class="col-4"><div class="small text-muted">Pagado</div><div class="fw-bold text-success" id="pagoTotalPagado"></div></div>
+                    <div class="col-4"><div class="small text-muted">Saldo Pendiente</div><div class="fw-bold text-danger" id="pagoSaldoPendiente"></div></div>
+                </div>
+
+                <div id="pagoHistorial" class="mb-3"></div>
+
+                <form method="POST" action="class/Insert_PagoVenta.php" onsubmit="return validarPago();">
+                    <input type="hidden" name="idVenta" id="pagoIdVenta">
+                    <input type="hidden" name="redirectQuery" id="pagoRedirectQuery">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">Fecha de Pago</label>
+                            <input type="date" class="form-control" name="fechaPago" id="pagoFecha" required>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">Forma de Pago</label>
+                            <select class="form-select" name="formaPago" id="pagoForma">
+                                <option value="DEPOSITO" selected>Depósito</option>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="CHEQUE">Cheque</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">Monto</label>
+                            <input type="number" step="0.01" class="form-control" name="monto" id="pagoMonto" required>
+                        </div>
+                        <div class="col-md-3 mb-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="document.getElementById('pagoMonto').value = document.getElementById('pagoMonto').dataset.saldo;">Usar saldo</button>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Referencia / Observación <span class="text-muted small">(N° de ingreso, banco, etc.)</span></label>
+                        <input type="text" class="form-control" name="referencia" id="pagoReferencia" placeholder="Ej. Ingreso a Bco #422 por $5150,00">
+                    </div>
+                    <div class="text-end"><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Registrar Pago</button></div>
                 </form>
             </div>
         </div>
@@ -483,6 +582,45 @@ function aplicarRetencion() {
 function validarVenta() {
     if (!document.getElementById('ventaIdProducto').value) {
         alert('Seleccione un producto de la lista de resultados.');
+        return false;
+    }
+    return true;
+}
+
+function abrirModalPago(v) {
+    document.getElementById('pagoIdVenta').value = v.ID_VENTA;
+    document.getElementById('pagoRedirectQuery').value = window.location.search.replace(/^\?/, '');
+    document.getElementById('pagoProducto').textContent = v.PRODUCTO;
+    document.getElementById('pagoCliente').textContent = v.CLIENTE || 'Sin cliente';
+    document.getElementById('pagoTotalACobrar').textContent = '$' + Number(v.TOTAL_A_COBRAR).toFixed(2);
+    document.getElementById('pagoTotalPagado').textContent = '$' + Number(v.TOTAL_PAGADO).toFixed(2);
+    document.getElementById('pagoSaldoPendiente').textContent = '$' + Number(v.SALDO_PENDIENTE).toFixed(2);
+    document.getElementById('pagoFecha').value = new Date().toISOString().substring(0, 10);
+    document.getElementById('pagoForma').value = 'DEPOSITO';
+    document.getElementById('pagoReferencia').value = '';
+    var montoInput = document.getElementById('pagoMonto');
+    montoInput.value = v.SALDO_PENDIENTE > 0 ? v.SALDO_PENDIENTE.toFixed(2) : '';
+    montoInput.dataset.saldo = v.SALDO_PENDIENTE.toFixed(2);
+
+    var historial = document.getElementById('pagoHistorial');
+    if (!v.PAGOS || !v.PAGOS.length) {
+        historial.innerHTML = '<p class="text-muted small mb-0">Sin pagos registrados todavía.</p>';
+    } else {
+        var filas = v.PAGOS.map(function(p) {
+            var formaLabel = {EFECTIVO: 'Efectivo', DEPOSITO: 'Depósito', CHEQUE: 'Cheque'}[p.FORMA_PAGO] || p.FORMA_PAGO;
+            return '<tr><td>' + p.FECHA_PAGO.split('-').reverse().join('/') + '</td><td>' + formaLabel + '</td><td>$' +
+                Number(p.MONTO).toFixed(2) + '</td><td>' + (p.REFERENCIA || '-') + '</td></tr>';
+        }).join('');
+        historial.innerHTML = '<label class="form-label small text-muted">Historial de pagos</label>' +
+            '<table class="table table-sm"><thead><tr><th>Fecha</th><th>Forma</th><th>Monto</th><th>Referencia</th></tr></thead><tbody>' +
+            filas + '</tbody></table>';
+    }
+}
+
+function validarPago() {
+    var monto = parseFloat(document.getElementById('pagoMonto').value) || 0;
+    if (monto <= 0) {
+        alert('Ingrese un monto válido.');
         return false;
     }
     return true;
