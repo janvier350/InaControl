@@ -211,7 +211,7 @@ $resResumen = mysqli_stmt_get_result($stmtRes);
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h6 class="mb-3">Resumen por Producto — <?php echo $mesSel ? $meses[$mesSel].' '.$anioSel : $anioSel; ?></h6>
-                                <div class="table-responsive" style="max-height:340px; overflow-y:auto;">
+                                <div class="table-responsive">
                                     <table class="table table-sm table-hover">
                                         <thead class="bg-light"><tr><th>Código</th><th>Producto</th><th>QQ</th><th>Precio Prom.</th><th>Total $</th></tr></thead>
                                         <tbody>
