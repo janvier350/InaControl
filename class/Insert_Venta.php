@@ -20,8 +20,9 @@ if (!$fecha || !$idProducto || $qq <= 0 || $precio <= 0) {
 }
 
 $total = round($qq * $precio, 2);
-$valorRetencion = round($total * $porcRetencion, 2);
-$totalACobrar = round($total - $valorRetencion, 2);
+$valorRetencionExacto = $total * $porcRetencion;
+$totalACobrar = round($total - $valorRetencionExacto, 2);
+$valorRetencion = round($valorRetencionExacto, 2);
 
 if ($cliente !== '') {
     $stmtChk = mysqli_prepare($conexion, "SELECT ID_CLIENTE FROM CONT_CLIENTE WHERE NOMBRE = ?");
