@@ -588,7 +588,7 @@ function calcularRetencion() {
 function aplicarRetencion() {
     var porc = document.getElementById('retPorcentaje').value;
     document.getElementById('ventaPorcRetencion').value = porc;
-    var texto = porc == 0 ? 'Sin retención' : (parseFloat(porc) * 100).toFixed(2) + '% de retención aplicada';
+    var texto = porc == 0 ? 'Sin retención' : (parseFloat(porc) * 100).toFixed(2) + '% de retención aplicada (' + document.getElementById('retValor').value + ')';
     document.getElementById('retencionResumen').textContent = texto + ' — Valor a cobrar: ' + document.getElementById('retACobrar').value;
 }
 
