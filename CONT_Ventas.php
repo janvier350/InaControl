@@ -145,8 +145,8 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalRetencion" onclick="abrirModalRetencion()">
                                             <i class="bi bi-receipt-cutoff"></i> Calcular Retención
                                         </button>
-                                        <span id="retencionResumen" class="small text-muted ms-2"></span>
-                                        <input type="hidden" name="porcRetencion" id="ventaPorcRetencion" value="0">
+                                        <span id="retencionResumen" class="small text-muted ms-2">1.75% de retención aplicada (predeterminado)</span>
+                                        <input type="hidden" name="porcRetencion" id="ventaPorcRetencion" value="0.0175">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Observación</label>
@@ -367,7 +367,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                     <select class="form-select" id="retPorcentaje" onchange="calcularRetencion()">
                         <option value="0">0% (Nota de Venta)</option>
                         <option value="0.01">1%</option>
-                        <option value="0.0175">1.75%</option>
+                        <option value="0.0175" selected>1.75%</option>
                     </select>
                 </div>
                 <div class="mb-2">
