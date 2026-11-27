@@ -88,7 +88,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
                 <?php endif; ?>
 
-                <?php $verListado = isset($_GET['anio']) || isset($_GET['mes']) || isset($_GET['tipo']) || isset($_GET['semestre']); ?>
+                <?php $verListado = isset($_GET['anio']) || isset($_GET['mes']) || isset($_GET['tipo']) || isset($_GET['semestre']) || isset($_GET['cliente']); ?>
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item"><a class="nav-link <?php echo $verListado ? '' : 'active'; ?>" data-bs-toggle="tab" href="#tab-registrar">Registrar</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $verListado ? 'active' : ''; ?>" data-bs-toggle="tab" href="#tab-listado">Listado</a></li>
@@ -173,6 +173,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                 $mesFiltro = isset($_GET['mes']) ? (int)$_GET['mes'] : 0;
                                 $semestreFiltro = isset($_GET['semestre']) ? (int)$_GET['semestre'] : 0;
                                 $tipoFiltro = $_GET['tipo'] ?? '';
+                                $clienteFiltro = trim($_GET['cliente'] ?? '');
 
                                 $sqlV = "SELECT V.*, P.NOMBRE AS PRODUCTO_NOMBRE, P.CODIGO AS PRODUCTO_CODIGO
                                          FROM CONT_VENTA V INNER JOIN CONT_PRODUCTO P ON V.ID_PRODUCTO = P.ID_PRODUCTO
@@ -182,6 +183,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                 if ($semestreFiltro === 1) { $sqlV .= " AND MONTH(V.FECHA) BETWEEN 1 AND 6"; }
                                 if ($semestreFiltro === 2) { $sqlV .= " AND MONTH(V.FECHA) BETWEEN 7 AND 12"; }
                                 if ($tipoFiltro) { $sqlV .= " AND V.TIPO = ?"; $types .= "s"; $params[] = $tipoFiltro; }
+                                if ($clienteFiltro !== '') { $sqlV .= " AND V.CLIENTE LIKE ?"; $types .= "s"; $params[] = "%$clienteFiltro%"; }
                                 $sqlV .= " ORDER BY V.FECHA DESC";
 
                                 $stmtV = mysqli_prepare($conexion, $sqlV);
@@ -287,6 +289,17 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                             <option value="CON_FACTURA" <?php echo $tipoFiltro === 'CON_FACTURA' ? 'selected' : ''; ?>>Con factura</option>
                                             <option value="SIN_FACTURA" <?php echo $tipoFiltro === 'SIN_FACTURA' ? 'selected' : ''; ?>>Sin factura</option>
                                         </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="cliente" list="listaClientesFiltro" placeholder="Filtrar por cliente..." value="<?php echo htmlspecialchars($clienteFiltro); ?>">
+                                        <datalist id="listaClientesFiltro">
+                                            <?php foreach ($clientesJs as $cj): ?>
+                                                <option value="<?php echo htmlspecialchars($cj); ?>">
+                                            <?php endforeach; ?>
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter"></i> Filtrar</button>
                                     </div>
                                 </form>
                                 <div class="table-responsive">
