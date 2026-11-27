@@ -1,4 +1,6 @@
--- Columna de referencia: el codigo numerico que el producto tiene en la
--- hoja de Excel del usuario (ej. 13, 33), util mientras se familiariza
--- con la app. No reemplaza al CODIGO interno del catalogo.
-ALTER TABLE CONT_PRODUCTO ADD COLUMN REF_EXCEL VARCHAR(20) NULL AFTER CODIGO;
+-- REVERTIDO: el numero de "codigo" visible junto a los productos en el
+-- Excel (13, 33, etc.) no es un identificador fijo por producto -- se
+-- repite para productos distintos (parece ser un numero de linea de la
+-- transaccion del dia, no del producto), asi que no es confiable como
+-- referencia y se elimina el campo.
+ALTER TABLE CONT_PRODUCTO DROP COLUMN REF_EXCEL;

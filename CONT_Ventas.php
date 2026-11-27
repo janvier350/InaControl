@@ -21,12 +21,9 @@ if(!isset($_SESSION["rol"])){
 $rol_usuario = $_SESSION["rol"];
 
 $productosJs = [];
-$qProd = $conexion->query("SELECT ID_PRODUCTO, CODIGO, REF_EXCEL, NOMBRE FROM CONT_PRODUCTO WHERE ESTADO = 'A' ORDER BY NOMBRE");
+$qProd = $conexion->query("SELECT ID_PRODUCTO, CODIGO, NOMBRE FROM CONT_PRODUCTO WHERE ESTADO = 'A' ORDER BY NOMBRE");
 while ($p = mysqli_fetch_assoc($qProd)) {
-    $partes = [];
-    if ($p['CODIGO']) { $partes[] = $p['CODIGO']; }
-    if ($p['REF_EXCEL']) { $partes[] = 'Excel #' . $p['REF_EXCEL']; }
-    $label = $partes ? $p['NOMBRE'] . ' (' . implode(' - ', $partes) . ')' : $p['NOMBRE'];
+    $label = $p['CODIGO'] ? $p['NOMBRE'] . ' (' . $p['CODIGO'] . ')' : $p['NOMBRE'];
     $productosJs[] = ['value' => $p['ID_PRODUCTO'], 'label' => $label];
 }
 

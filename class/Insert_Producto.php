@@ -5,7 +5,6 @@ $conexion = conectarse();
 session_start();
 
 $codigo = mysqli_real_escape_string($conexion, trim($_POST['codigo'] ?? ''));
-$refExcel = mysqli_real_escape_string($conexion, trim($_POST['refExcel'] ?? ''));
 $nombre = mysqli_real_escape_string($conexion, trim($_POST['nombre'] ?? ''));
 
 if (!$nombre) {
@@ -14,8 +13,7 @@ if (!$nombre) {
 }
 
 $codigoSql = $codigo !== '' ? "'$codigo'" : 'NULL';
-$refExcelSql = $refExcel !== '' ? "'$refExcel'" : 'NULL';
-$sql = "INSERT INTO CONT_PRODUCTO (CODIGO, REF_EXCEL, NOMBRE, ESTADO) VALUES ($codigoSql, $refExcelSql, '$nombre', 'A')";
+$sql = "INSERT INTO CONT_PRODUCTO (CODIGO, NOMBRE, ESTADO) VALUES ($codigoSql, '$nombre', 'A')";
 
 if ($conexion->query($sql) === TRUE) {
     header("Location: ../CONT_Productos.php?success=1");

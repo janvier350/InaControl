@@ -6,7 +6,6 @@ session_start();
 
 $idProducto = (int)($_POST['idProducto'] ?? 0);
 $codigo = mysqli_real_escape_string($conexion, trim($_POST['codigo'] ?? ''));
-$refExcel = mysqli_real_escape_string($conexion, trim($_POST['refExcel'] ?? ''));
 $nombre = mysqli_real_escape_string($conexion, trim($_POST['nombre'] ?? ''));
 $estado = ($_POST['estado'] ?? 'A') === 'I' ? 'I' : 'A';
 
@@ -16,8 +15,7 @@ if (!$idProducto || !$nombre) {
 }
 
 $codigoSql = $codigo !== '' ? "'$codigo'" : 'NULL';
-$refExcelSql = $refExcel !== '' ? "'$refExcel'" : 'NULL';
-$sql = "UPDATE CONT_PRODUCTO SET CODIGO=$codigoSql, REF_EXCEL=$refExcelSql, NOMBRE='$nombre', ESTADO='$estado' WHERE ID_PRODUCTO=$idProducto";
+$sql = "UPDATE CONT_PRODUCTO SET CODIGO=$codigoSql, NOMBRE='$nombre', ESTADO='$estado' WHERE ID_PRODUCTO=$idProducto";
 
 if ($conexion->query($sql) === TRUE) {
     header("Location: ../CONT_Productos.php?success=1");
