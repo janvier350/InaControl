@@ -84,16 +84,17 @@ $rol_usuario = $_SESSION["rol"];
                         <div class="table-responsive">
                             <table class="table table-hover" id="tablaProductos">
                                 <thead>
-                                    <tr><th>CÓDIGO</th><th>NOMBRE</th><th>ESTADO</th><th>ACCIONES</th></tr>
+                                    <tr><th>CÓDIGO</th><th>REF. EXCEL</th><th>NOMBRE</th><th>ESTADO</th><th>ACCIONES</th></tr>
                                 </thead>
                                 <tbody>
                                 <?php
                                 $q = $conexion->query("SELECT * FROM CONT_PRODUCTO ORDER BY ESTADO DESC, NOMBRE ASC");
                                 while ($p = mysqli_fetch_assoc($q)):
-                                    $filtro = strtolower($p['CODIGO'].' '.$p['NOMBRE']);
+                                    $filtro = strtolower($p['CODIGO'].' '.$p['NOMBRE'].' '.$p['REF_EXCEL']);
                                 ?>
                                     <tr data-filtro="<?php echo htmlspecialchars($filtro); ?>">
                                         <td><?php echo htmlspecialchars($p['CODIGO'] ?: '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($p['REF_EXCEL'] ?: '-'); ?></td>
                                         <td><?php echo htmlspecialchars($p['NOMBRE']); ?></td>
                                         <td>
                                             <?php if ($p['ESTADO'] === 'A'): ?>
@@ -128,6 +129,7 @@ $rol_usuario = $_SESSION["rol"];
             <div class="modal-body">
                 <form method="POST" action="class/Insert_Producto.php">
                     <div class="mb-2"><label class="form-label">Código (opcional)</label><input class="form-control" name="codigo"></div>
+                    <div class="mb-2"><label class="form-label">Código de referencia en Excel (opcional)</label><input class="form-control" name="refExcel" placeholder="Ej. 33"></div>
                     <div class="mb-2"><label class="form-label">Nombre del producto</label><input class="form-control" name="nombre" required></div>
                     <div class="text-end"><button type="submit" class="btn btn-success">Guardar</button></div>
                 </form>
@@ -145,6 +147,7 @@ $rol_usuario = $_SESSION["rol"];
                 <form method="POST" action="class/Editar_Producto.php">
                     <input type="hidden" name="idProducto" id="editIdProducto">
                     <div class="mb-2"><label class="form-label">Código</label><input class="form-control" name="codigo" id="editCodigo"></div>
+                    <div class="mb-2"><label class="form-label">Código de referencia en Excel</label><input class="form-control" name="refExcel" id="editRefExcel" placeholder="Ej. 33"></div>
                     <div class="mb-2"><label class="form-label">Nombre</label><input class="form-control" name="nombre" id="editNombre" required></div>
                     <div class="mb-2">
                         <label class="form-label">Estado</label>
@@ -164,6 +167,7 @@ $rol_usuario = $_SESSION["rol"];
 function cargarProducto(p) {
     document.getElementById('editIdProducto').value = p.ID_PRODUCTO;
     document.getElementById('editCodigo').value = p.CODIGO || '';
+    document.getElementById('editRefExcel').value = p.REF_EXCEL || '';
     document.getElementById('editNombre').value = p.NOMBRE || '';
     document.getElementById('editEstadoProd').value = p.ESTADO || 'A';
 }
