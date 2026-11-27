@@ -27,10 +27,17 @@ if (empty($anios)) { $anios[] = (int)date('Y'); }
 
 $anioSel = isset($_GET['anio']) ? (int)$_GET['anio'] : $anios[0];
 $anioAnterior = $anioSel - 1;
+$mesSel = isset($_GET['mes']) ? (int)$_GET['mes'] : 0;
+$meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-function kpiNum($conexion, $sql, $anio) {
-    $stmt = mysqli_prepare($conexion, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $anio);
+function kpiNum($conexion, $sql, $anio, $mes = 0) {
+    $sqlMes = $mes ? $sql . " AND MONTH(FECHA)=?" : $sql;
+    $stmt = mysqli_prepare($conexion, $sqlMes);
+    if ($mes) {
+        mysqli_stmt_bind_param($stmt, "ii", $anio, $mes);
+    } else {
+        mysqli_stmt_bind_param($stmt, "i", $anio);
+    }
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
     $row = mysqli_fetch_row($res);
@@ -38,9 +45,9 @@ function kpiNum($conexion, $sql, $anio) {
     return $row ? $row[0] : 0;
 }
 
-$totalQQ   = kpiNum($conexion, "SELECT IFNULL(SUM(QQ),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=?", $anioSel);
-$totalUSD  = kpiNum($conexion, "SELECT IFNULL(SUM(TOTAL),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=?", $anioSel);
-$totalTrans= kpiNum($conexion, "SELECT COUNT(*) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=?", $anioSel);
+$totalQQ   = kpiNum($conexion, "SELECT IFNULL(SUM(QQ),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=?", $anioSel, $mesSel);
+$totalUSD  = kpiNum($conexion, "SELECT IFNULL(SUM(TOTAL),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=?", $anioSel, $mesSel);
+$totalTrans= kpiNum($conexion, "SELECT COUNT(*) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=?", $anioSel, $mesSel);
 $precioProm= $totalQQ > 0 ? $totalUSD / $totalQQ : 0;
 
 // Ventas por mes, año seleccionado vs año anterior
@@ -57,13 +64,14 @@ function ventasPorMes($conexion, $anio) {
 $ventasMesActual = ventasPorMes($conexion, $anioSel);
 $ventasMesAnterior = ventasPorMes($conexion, $anioAnterior);
 
-// Top 10 productos por $ en el año seleccionado
+// Top 10 productos por $ en el año (y mes, si se filtra) seleccionado
 $topProductos = [];
-$stmtTop = mysqli_prepare($conexion, "SELECT P.NOMBRE, SUM(V.TOTAL) AS TOTAL, SUM(V.QQ) AS QQ
-                                       FROM CONT_VENTA V INNER JOIN CONT_PRODUCTO P ON V.ID_PRODUCTO = P.ID_PRODUCTO
-                                       WHERE V.ESTADO='A' AND YEAR(V.FECHA)=?
-                                       GROUP BY V.ID_PRODUCTO ORDER BY TOTAL DESC LIMIT 10");
-mysqli_stmt_bind_param($stmtTop, "i", $anioSel);
+$sqlTop = "SELECT P.NOMBRE, SUM(V.TOTAL) AS TOTAL, SUM(V.QQ) AS QQ
+           FROM CONT_VENTA V INNER JOIN CONT_PRODUCTO P ON V.ID_PRODUCTO = P.ID_PRODUCTO
+           WHERE V.ESTADO='A' AND YEAR(V.FECHA)=?" . ($mesSel ? " AND MONTH(V.FECHA)=?" : "") . "
+           GROUP BY V.ID_PRODUCTO ORDER BY TOTAL DESC LIMIT 10";
+$stmtTop = mysqli_prepare($conexion, $sqlTop);
+if ($mesSel) { mysqli_stmt_bind_param($stmtTop, "ii", $anioSel, $mesSel); } else { mysqli_stmt_bind_param($stmtTop, "i", $anioSel); }
 mysqli_stmt_execute($stmtTop);
 $resTop = mysqli_stmt_get_result($stmtTop);
 while ($r = mysqli_fetch_assoc($resTop)) { $topProductos[] = $r; }
@@ -72,17 +80,18 @@ mysqli_stmt_close($stmtTop);
 // Con factura vs sin factura
 $tipoLabels = ['Con Factura', 'Sin Factura'];
 $tipoData = [
-    kpiNum($conexion, "SELECT IFNULL(SUM(TOTAL),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=? AND TIPO='CON_FACTURA'", $anioSel),
-    kpiNum($conexion, "SELECT IFNULL(SUM(TOTAL),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=? AND TIPO='SIN_FACTURA'", $anioSel),
+    kpiNum($conexion, "SELECT IFNULL(SUM(TOTAL),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=? AND TIPO='CON_FACTURA'", $anioSel, $mesSel),
+    kpiNum($conexion, "SELECT IFNULL(SUM(TOTAL),0) FROM CONT_VENTA WHERE ESTADO='A' AND YEAR(FECHA)=? AND TIPO='SIN_FACTURA'", $anioSel, $mesSel),
 ];
 
 // Resumen completo por producto (tabla)
 $resumenProductos = [];
-$stmtRes = mysqli_prepare($conexion, "SELECT P.CODIGO, P.NOMBRE, SUM(V.QQ) AS QQ, SUM(V.TOTAL) AS TOTAL, AVG(V.PRECIO) AS PRECIO_PROM
-                                       FROM CONT_VENTA V INNER JOIN CONT_PRODUCTO P ON V.ID_PRODUCTO = P.ID_PRODUCTO
-                                       WHERE V.ESTADO='A' AND YEAR(V.FECHA)=?
-                                       GROUP BY V.ID_PRODUCTO ORDER BY TOTAL DESC");
-mysqli_stmt_bind_param($stmtRes, "i", $anioSel);
+$sqlRes = "SELECT P.CODIGO, P.NOMBRE, SUM(V.QQ) AS QQ, SUM(V.TOTAL) AS TOTAL, AVG(V.PRECIO) AS PRECIO_PROM
+           FROM CONT_VENTA V INNER JOIN CONT_PRODUCTO P ON V.ID_PRODUCTO = P.ID_PRODUCTO
+           WHERE V.ESTADO='A' AND YEAR(V.FECHA)=?" . ($mesSel ? " AND MONTH(V.FECHA)=?" : "") . "
+           GROUP BY V.ID_PRODUCTO ORDER BY TOTAL DESC";
+$stmtRes = mysqli_prepare($conexion, $sqlRes);
+if ($mesSel) { mysqli_stmt_bind_param($stmtRes, "ii", $anioSel, $mesSel); } else { mysqli_stmt_bind_param($stmtRes, "i", $anioSel); }
 mysqli_stmt_execute($stmtRes);
 $resResumen = mysqli_stmt_get_result($stmtRes);
 ?>
@@ -126,11 +135,17 @@ $resResumen = mysqli_stmt_get_result($stmtRes);
                         <div class="page-title-heading">
                             <div class="page-title-icon"><i class="pe-7s-graph3 icon-gradient bg-warm-flame"></i></div>
                             <div><div class="page-title-subheading text-black">Estadísticas de Ventas</div></div>
-                            <form method="GET" class="ms-auto">
+                            <form method="GET" class="ms-auto d-flex gap-2">
                                 <select class="form-select" name="anio" onchange="this.form.submit()">
                                     <?php foreach ($anios as $a): ?>
                                         <option value="<?php echo $a; ?>" <?php echo $a == $anioSel ? 'selected' : ''; ?>><?php echo $a; ?></option>
                                     <?php endforeach; ?>
+                                </select>
+                                <select class="form-select" name="mes" onchange="this.form.submit()">
+                                    <option value="0">Todo el año</option>
+                                    <?php for ($m = 1; $m <= 12; $m++): ?>
+                                        <option value="<?php echo $m; ?>" <?php echo $m == $mesSel ? 'selected' : ''; ?>><?php echo $meses[$m]; ?></option>
+                                    <?php endfor; ?>
                                 </select>
                             </form>
                         </div>
@@ -195,7 +210,7 @@ $resResumen = mysqli_stmt_get_result($stmtRes);
                     <div class="col-md-7">
                         <div class="card shadow-sm">
                             <div class="card-body">
-                                <h6 class="mb-3">Resumen por Producto — <?php echo $anioSel; ?></h6>
+                                <h6 class="mb-3">Resumen por Producto — <?php echo $mesSel ? $meses[$mesSel].' '.$anioSel : $anioSel; ?></h6>
                                 <div class="table-responsive" style="max-height:340px; overflow-y:auto;">
                                     <table class="table table-sm table-hover">
                                         <thead class="bg-light"><tr><th>Código</th><th>Producto</th><th>QQ</th><th>Precio Prom.</th><th>Total $</th></tr></thead>
