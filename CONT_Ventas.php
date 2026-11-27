@@ -324,7 +324,7 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                                 <td><?php echo $v['VALOR_RETENCION'] > 0 ? '$'.number_format($v['VALOR_RETENCION'], 2).' ('.number_format($v['PORC_RETENCION']*100, 2).'%)' : '-'; ?></td>
                                                 <td>$<?php echo number_format($v['TOTAL_A_COBRAR'] ?? $v['TOTAL'], 2); ?></td>
                                                 <td><span class="badge <?php echo $badgePago; ?>"><?php echo $labelPago; ?></span></td>
-                                                <td>
+                                                <td class="text-nowrap">
                                                     <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalPagoVenta"
                                                         onclick='abrirModalPago(<?php echo json_encode([
                                                             "ID_VENTA" => $v["ID_VENTA"],
@@ -337,6 +337,27 @@ while ($c = mysqli_fetch_assoc($qCli)) {
                                                         ], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
                                                         <i class="bi bi-cash-coin"></i>
                                                     </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditarVenta"
+                                                        onclick='abrirModalEditarVenta(<?php echo json_encode([
+                                                            "ID_VENTA" => $v["ID_VENTA"],
+                                                            "FECHA" => $v["FECHA"],
+                                                            "CLIENTE" => $v["CLIENTE"],
+                                                            "FACTURA_NO" => $v["FACTURA_NO"],
+                                                            "TIPO" => $v["TIPO"],
+                                                            "ID_PRODUCTO" => $v["ID_PRODUCTO"],
+                                                            "PRODUCTO_NOMBRE" => $v["PRODUCTO_NOMBRE"],
+                                                            "QQ" => $v["QQ"],
+                                                            "PRECIO" => $v["PRECIO"],
+                                                            "PORC_RETENCION" => $v["PORC_RETENCION"],
+                                                            "OBSERVACION" => $v["OBSERVACION"],
+                                                        ], JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <form method="POST" action="class/Anular_Venta.php" class="d-inline" onsubmit="return confirm('¿Anular esta venta? Dejará de contar en los totales, pero no se borra del historial.');">
+                                                        <input type="hidden" name="idVenta" value="<?php echo $v['ID_VENTA']; ?>">
+                                                        <input type="hidden" name="redirectQuery" value="<?php echo htmlspecialchars(http_build_query($_GET)); ?>">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle"></i></button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         <?php endforeach; endif; ?>
@@ -406,6 +427,75 @@ while ($c = mysqli_fetch_assoc($qCli)) {
 </div>
 
 <!-- Modal Registrar Pago -->
+<!-- Modal Editar Venta -->
+<div class="modal fade" id="modalEditarVenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Editar Venta</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <form method="POST" action="class/Editar_Venta.php">
+                    <input type="hidden" name="idVenta" id="editVentaId">
+                    <input type="hidden" name="idProducto" id="editVentaIdProducto">
+                    <input type="hidden" name="redirectQuery" id="editVentaRedirectQuery">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" class="form-control" name="fecha" id="editVentaFecha" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tipo de venta</label>
+                            <select class="form-select" name="tipo" id="editVentaTipo">
+                                <option value="CON_FACTURA">Con factura</option>
+                                <option value="SIN_FACTURA">Sin factura</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Cliente</label>
+                            <input type="text" class="form-control" name="cliente" id="editVentaCliente">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">N° Factura</label>
+                            <input type="text" class="form-control" name="facturaNo" id="editVentaFacturaNo">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Producto</label>
+                        <input type="text" class="form-control" id="editVentaProductoDisplay" readonly>
+                        <div class="form-text">El producto no se puede cambiar aquí; anula la venta y registra una nueva si el producto está equivocado.</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">QQ</label>
+                            <input type="number" step="0.01" class="form-control" name="qq" id="editVentaQQ" oninput="calcularEditVentaTotal()" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Precio</label>
+                            <input type="number" step="0.0001" class="form-control" name="precio" id="editVentaPrecio" oninput="calcularEditVentaTotal()" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">% Retención</label>
+                            <select class="form-select" name="porcRetencion" id="editVentaPorcRetencion" onchange="calcularEditVentaTotal()">
+                                <option value="0">0% (Nota de Venta)</option>
+                                <option value="0.01">1%</option>
+                                <option value="0.0175">1.75%</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Total a Cobrar</label>
+                            <input type="text" class="form-control" id="editVentaACobrarDisplay" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observación</label>
+                        <textarea class="form-control" name="observacion" id="editVentaObservacion" rows="2"></textarea>
+                    </div>
+                    <div class="text-end"><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar cambios</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalPagoVenta" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -598,6 +688,31 @@ function validarVenta() {
         return false;
     }
     return true;
+}
+
+function abrirModalEditarVenta(v) {
+    document.getElementById('editVentaId').value = v.ID_VENTA;
+    document.getElementById('editVentaIdProducto').value = v.ID_PRODUCTO;
+    document.getElementById('editVentaRedirectQuery').value = window.location.search.replace(/^\?/, '');
+    document.getElementById('editVentaFecha').value = v.FECHA;
+    document.getElementById('editVentaTipo').value = v.TIPO;
+    document.getElementById('editVentaCliente').value = v.CLIENTE || '';
+    document.getElementById('editVentaFacturaNo').value = v.FACTURA_NO || '';
+    document.getElementById('editVentaProductoDisplay').value = v.PRODUCTO_NOMBRE;
+    document.getElementById('editVentaQQ').value = v.QQ;
+    document.getElementById('editVentaPrecio').value = v.PRECIO;
+    document.getElementById('editVentaPorcRetencion').value = v.PORC_RETENCION;
+    document.getElementById('editVentaObservacion').value = v.OBSERVACION || '';
+    calcularEditVentaTotal();
+}
+
+function calcularEditVentaTotal() {
+    var qq = parseFloat(document.getElementById('editVentaQQ').value) || 0;
+    var precio = parseFloat(document.getElementById('editVentaPrecio').value) || 0;
+    var porc = parseFloat(document.getElementById('editVentaPorcRetencion').value) || 0;
+    var base = qq * precio;
+    var aCobrar = base - (base * porc);
+    document.getElementById('editVentaACobrarDisplay').value = '$' + aCobrar.toFixed(2);
 }
 
 function abrirModalPago(v) {
